@@ -1,0 +1,71 @@
+CREATE TABLE IF NOT EXISTS `wp_communities` (
+  `community_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `community_owner_user_ID` int(11) NOT NULL default '0',
+  `community_name` VARCHAR(255),
+  `community_description` VARCHAR(255),
+  `community_private` tinyint(1) NOT NULL default '0',
+  PRIMARY KEY  (`community_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE IF NOT EXISTS `wp_communities_members` (
+  `member_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `community_ID` int(11) NOT NULL default '0',
+  `member_moderator` tinyint(1) NOT NULL default '0',
+  `member_notifications` VARCHAR(255) NOT NULL default 'digest',
+  `member_user_ID` int(11) NOT NULL default '0',
+  PRIMARY KEY  (`member_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `wp_communities_topics` (
+  `topic_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `topic_community_ID` bigint(20) NOT NULL,
+  `topic_title` TEXT NOT NULL,
+  `topic_author` bigint(20) NOT NULL,
+  `topic_last_author` bigint(20) NOT NULL,
+  `topic_stamp` bigint(30) NOT NULL,
+  `topic_last_updated_stamp` bigint(30) NOT NULL,
+  `topic_closed` tinyint(1) NOT NULL default '0',
+  `topic_sticky` tinyint(1) NOT NULL default '0',
+  `topic_posts` bigint(20) NOT NULL default '0',
+  PRIMARY KEY  (`topic_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `wp_communities_posts` (
+  `post_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `post_community_ID` bigint(20) NOT NULL,
+  `post_topic_ID` bigint(20) NOT NULL,
+  `post_author` bigint(20) NOT NULL,
+  `post_content` TEXT,
+  `post_stamp` bigint(30) NOT NULL,
+  PRIMARY KEY  (`post_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `wp_communities_pages` (
+  `page_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `page_community_ID` bigint(20) NOT NULL,
+  `page_parent_page_ID` bigint(20) NOT NULL default '0',
+  `page_title` TEXT NOT NULL,
+  `page_content` TEXT,
+  `page_stamp` bigint(30) NOT NULL,
+  PRIMARY KEY  (`page_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `wp_communities_news_items` (
+  `news_item_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `news_item_community_ID` bigint(20) NOT NULL,
+  `news_item_title` TEXT NOT NULL,
+  `news_item_content` TEXT,
+  `news_item_stamp` bigint(30) NOT NULL,
+  PRIMARY KEY  (`news_item_ID`)
+) ENGINE=MyISAM;
+
+CREATE TABLE `wp_communities_notifications` (
+  `notification_ID` bigint(20) unsigned NOT NULL auto_increment,
+  `notification_community_ID` bigint(20) NOT NULL,
+  `notification_user_ID` bigint(20) NOT NULL,
+  `notification_item_title` TEXT NOT NULL,
+  `notification_item_url` TEXT,
+  `notification_item_type` VARCHAR(255) NOT NULL,
+  `notification_stamp` bigint(30) NOT NULL,
+  PRIMARY KEY  (`notification_ID`)
+) ENGINE=MyISAM;
