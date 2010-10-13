@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Communities
-Plugin URI: 
-Description:
+Plugin URI: http://premium.wpmudev.org/project/communities
+Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Andrew Billits
-Version: 1.1.2
-Author URI:
+Version: 1.1.3
+Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
 
@@ -1062,12 +1062,12 @@ function communities_output() {
 						if( $start == 0 ) { 
 							echo __('Previous Page');
 						} elseif( $start <= 30 ) { 
-							echo '<a href="communities.php?action=members_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
+							echo '<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 						} else {
-							echo '<a href="communities.php?action=members_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
+							echo '<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 						} 
 						if ( $next ) {
-							echo '&nbsp;||&nbsp;<a href="communities.php?action=members_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
+							echo '&nbsp;||&nbsp;<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 						} else {
 							echo '&nbsp;||&nbsp;' . __('Next Page');
 						}
@@ -3015,12 +3015,12 @@ function communities_manage_output() {
 					if( $start == 0 ) { 
 						echo __('Previous Page');
 					} elseif( $start <= 30 ) { 
-						echo '<a href="communities.php?page=manage-communities&action=members_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
+						echo '<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} else {
-						echo '<a href="communities.php?page=manage-communities&action=members_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
+						echo '<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} 
 					if ( $next ) {
-						echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&action=members_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
+						echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 					} else {
 						echo '&nbsp;||&nbsp;' . __('Next Page');
 					}
