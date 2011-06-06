@@ -3,14 +3,14 @@
 Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
-Author: Andrew Billits
-Version: 1.1.3
+Author: Andrew Billits, Andrey Shipilov (Incsub)
+Version: 1.1.4
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
 
 /*
-Copyright 2007-2009 Incsub (http://incsub.com)
+Copyright 2009-2011 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.2';
+$communities_current_version = '1.1.4';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -827,7 +827,7 @@ function communities_output() {
 					echo "<td valign='top'><a href='communities.php?action=news&cid=" . $community['community_ID'] . "' rel='permalink' class='edit'>" . __('News') . "</a></td>";
 					$community_member_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '" . $community['community_ID'] . "'");
 					echo "<td valign='top'><a href='communities.php?action=member_list&cid=" . $community['community_ID'] . "' rel='permalink' class='delete'>" . __('Members') . " (" . $community_member_count . ")</a></td>";
-					echo "<td valign='top'><a href='inbox.php?page=new&message_to=" . $owner_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message to Owner') . "</a></td>";
+					echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" . $owner_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message to Owner') . "</a></td>";
 					echo "<td valign='top'><a href='communities.php?action=notifications&cid=" . $community['community_ID'] . "' rel='permalink' class='edit'>" . __('Notifications') . "</a></td>";
 					if ( $community_details->community_owner_user_ID == $user_ID ) {
 						echo "<td valign='top'>" . __('Leave') . "</td>";
@@ -1109,7 +1109,7 @@ function communities_output() {
 						if ( $member['member_user_ID'] == $user_ID ) {
 							echo "<td valign='top'>" . __('Send Message') . "</td>";
 						} else {
-							echo "<td valign='top'><a href='inbox.php?page=new&message_to=" . $member_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message') . "</a></td>";
+							echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" . $member_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message') . "</a></td>";
 						}
 						echo "</tr>";
 						$class = ('alternate' == $class) ? '' : 'alternate';
@@ -1420,7 +1420,7 @@ function communities_output() {
                     $last_poster_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $topic_details->topic_last_author . "'");
                     $last_poster_primary_blog = get_active_blog_for_user( $topic_details->topic_last_author );
 					?>
-	                <li><strong><?php _e('Last Poster'); ?>:</strong> <?php echo $last_poster_details->display_name; ?> (<a href="inbox.php?page=new&message_to=<?php echo $last_poster_details->user_login; ?>" style="text-decoration:none;"><?php _e('Send Message'); ?></a> | <a href="http://<?php echo  $last_poster_primary_blog->domain .  $last_poster_primary_blog->path; ?>" style="text-decoration:none;"><?php _e('View Blog'); ?></a>)</li>
+	                <li><strong><?php _e('Last Poster'); ?>:</strong> <?php echo $last_poster_details->display_name; ?> (<a href="admin.php?page=messaging_new&message_to=<?php echo $last_poster_details->user_login; ?>" style="text-decoration:none;"><?php _e('Send Message'); ?></a> | <a href="http://<?php echo  $last_poster_primary_blog->domain .  $last_poster_primary_blog->path; ?>" style="text-decoration:none;"><?php _e('View Blog'); ?></a>)</li>
                     <?php
 					if ( is_site_admin() || $member_moderator == '1' ) {
 						?>
@@ -1522,7 +1522,7 @@ function communities_output() {
 						echo "<img src='http://" . $current_site->domain . $current_site->path . "avatar/user-" . $post['post_author'] . "-48.png' />";
 						if ( $post['post_author'] != $user_ID ) {
 							echo "<br />";
-							echo "<a href='inbox.php?page=new&message_to=" . $user_details->user_login . "' style='text-decoration:none;'>" . __("Send Message") . "</a>";
+							echo "<a href='admin.php?page=messaging_new&message_to=" . $user_details->user_login . "' style='text-decoration:none;'>" . __("Send Message") . "</a>";
 						}
 						echo "<br />";
 						echo "<a href='http://" . $user_primary_blog->domain . $user_primary_blog->path . "' style='text-decoration:none;'>" . __("View Blog") . "</a>";
@@ -2544,7 +2544,7 @@ function communities_output() {
                                         $member_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $member['member_user_ID'] . "'");
                                         $member_primary_blog = get_active_blog_for_user( $member['member_user_ID'] );
                                         ?>
-                                        <li><strong><?php echo $member_details->display_name; ?></strong> (<a style="text-decoration:none;" href="inbox.php?page=new&message_to=<?php echo $member_details->user_login; ?>" style="text-decoration:none;"><?php _e('Send Message'); ?></a> | <a href="http://<?php echo $member_primary_blog->domain . $member_primary_blog->path; ?>" style="text-decoration:none;"><?php _e('View Blog'); ?></a>)</li>
+                                        <li><strong><?php echo $member_details->display_name; ?></strong> (<a style="text-decoration:none;" href="admin.php?page=messaging_new&message_to=<?php echo $member_details->user_login; ?>" style="text-decoration:none;"><?php _e('Send Message'); ?></a> | <a href="http://<?php echo $member_primary_blog->domain . $member_primary_blog->path; ?>" style="text-decoration:none;"><?php _e('View Blog'); ?></a>)</li>
                                         <?php
                                     }
                                     echo "</ul>";
@@ -3057,7 +3057,7 @@ function communities_manage_output() {
 					echo "<td valign='top'>" . $member_type . "</td>";
 					$member_primary_blog = get_active_blog_for_user( $member['member_user_ID'] );
 					echo "<td valign='top'><a href='http://" . $member_primary_blog->domain . $member_primary_blog->path . "' rel='permalink' class='edit'>" . __('Visit Blog') . "</a></td>";
-					echo "<td valign='top'><a href='inbox.php?page=new&message_to=" . $member_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message') . "</a></td>";
+					echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" . $member_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message') . "</a></td>";
 					if ( $member['member_moderator'] == '1' ) {
 						echo "<td valign='top'><a href='communities.php?page=manage-communities&action=remove_moderator&uid=" . $member['member_user_ID'] . "&cid=" . $_GET['cid'] . "&num=" . $_GET['num'] . "&start=" . $_GET['start'] . "' rel='permalink' class='delete'>" . __('Remove Moderator Privelege') . "</a></td>";
 					} else {
@@ -3523,7 +3523,7 @@ function communities_find_output() {
 							} else {
 								echo "<td valign='top'><a href='communities.php?page=find-communities&action=join_community&cid=" . $search_result['community_ID'] . "&search_terms=" . rawurlencode( $search_terms ) . "' rel='permalink' class='edit'>" . __('Join') . "</a></td>";
 							}
-							echo "<td valign='top'><a href='inbox.php?page=new&message_to=" . $owner_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message to Owner') . "</a></td>";
+							echo "<td valign='top'><a href='admin.php?page=messaging_new&message_to=" . $owner_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message to Owner') . "</a></td>";
 						} else {
 							echo "<td valign='top'>" . __('Join') . "</a></td>";
 							echo "<td valign='top'>" . __('Send Message to Owner') . "</a></td>";
