@@ -9,7 +9,7 @@ Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
 
-/* 
+/*
 Copyright 2007-2009 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
@@ -114,7 +114,7 @@ function communities_make_current() {
 	if (get_site_option( "communities_version" ) == '') {
 		add_site_option( 'communities_version', '0.0.0' );
 	}
-	
+
 	if (get_site_option( "communities_version" ) == $communities_current_version) {
 		// do nothing
 	} else {
@@ -127,7 +127,7 @@ function communities_make_current() {
 	if (get_option( "communities_version" ) == '') {
 		add_option( 'communities_version', '0.0.0' );
 	}
-	
+
 	if (get_option( "communities_version" ) == $communities_current_version) {
 		// do nothing
 	} else {
@@ -148,11 +148,11 @@ function communities_global_install() {
 	if (get_site_option( "communities_installed" ) == '') {
 		add_site_option( 'communities_installed', 'no' );
 	}
-	
+
 	if (get_site_option( "communities_installed" ) == "yes") {
 		// do nothing
 	} else {
-	
+
 		$communities_table1 = "CREATE TABLE IF NOT EXISTS `" . $wpdb->base_prefix . "communities` (
   `community_ID` bigint(20) unsigned NOT NULL auto_increment,
   `community_owner_user_ID` int(11) NOT NULL default '0',
@@ -257,7 +257,7 @@ function communities_update_community($user_ID, $community_ID, $description, $pr
 	global $wpdb;
 	if ( is_site_admin() ) {
 		$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_description = '" . $description . "' WHERE community_ID = '" . $community_ID . "'");
-		$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_private = '" . $private . "' WHERE community_ID = '" . $community_ID . "'");	
+		$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_private = '" . $private . "' WHERE community_ID = '" . $community_ID . "'");
 	} else {
 		$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_description = '" . $description . "' WHERE community_ID = '" . $community_ID . "' AND community_owner_user_ID = '" . $user_ID . "'");
 		$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_private = '" . $private . "' WHERE community_ID = '" . $community_ID . "' AND community_owner_user_ID = '" . $user_ID . "'");
@@ -315,73 +315,73 @@ function communities_count_posts($topic_ID) {
 
 function communities_add_topic($community_ID, $user_ID, $title, $content, $sticky = '0') {
 	global $wpdb;
-	
+
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
 	$title = strip_tags($title);
-	
+
 	$time = time();
 	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_topics (topic_community_ID, topic_title, topic_author, topic_last_author, topic_stamp, topic_last_updated_stamp, topic_sticky) VALUES ( '" . $community_ID . "', '" . addslashes( $title ) . "', '" . $user_ID . "', '" . $user_ID . "', '" . $time . "', '" . $time . "', '" . $sticky . "')" );
 	$topic_ID = $wpdb->get_var("SELECT topic_ID FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_stamp = '" . $time . "' AND topic_title = '" . addslashes( $title ) . "' AND topic_author = '" . $user_ID . "'");
 	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_posts (post_community_ID, post_topic_ID, post_author, post_content, post_stamp) VALUES ( '" . $community_ID . "', '" . $topic_ID . "', '" . $user_ID . "', '" . addslashes( $content ) . "', '" . $time . "')" );
-	
+
 	communities_count_posts($topic_ID);
-	
+
 	communities_topic_notification($community_ID, $topic_ID, $title);
-	
+
 	return 	$topic_ID;
 }
 
 function communities_add_post($community_ID, $topic_ID, $user_ID, $content) {
 	global $wpdb;
-	
+
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
 
 	$time = time();
 	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_posts (post_community_ID, post_topic_ID, post_author, post_content, post_stamp) VALUES ( '" . $community_ID . "', '" . $topic_ID . "', '" . $user_ID . "', '" . addslashes( $content ) . "', '" . $time . "')" );
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_last_author = '" . $user_ID . "' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_last_updated_stamp = '" . $time . "' WHERE topic_ID = '" . $topic_ID . "'" );
-	
+
 	communities_count_posts($topic_ID);
-	
+
 }
 
 function communities_update_post_content($post_ID, $content) {
 	global $wpdb;
-	
+
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_posts SET post_content = '" . addslashes( $content ) . "' WHERE post_ID = '" . $post_ID . "'" );
 }
 
 function communities_update_topic_title($topic_ID, $title) {
 	global $wpdb;
-	
+
 	$title = strip_tags($title, '<a><p><ul><li><br><strong><img>');
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_title = '" . addslashes( $title ) . "' WHERE topic_ID = '" . $topic_ID . "'" );
 }
 
 function communities_close_topic($topic_ID) {
 	global $wpdb;
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_closed = '1' WHERE topic_ID = '" . $topic_ID . "'" );
 }
 
 function communities_open_topic($topic_ID) {
 	global $wpdb;
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_closed = '0' WHERE topic_ID = '" . $topic_ID . "'" );
 }
 
 function communities_stick_topic($topic_ID) {
 	global $wpdb;
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_sticky = '1' WHERE topic_ID = '" . $topic_ID . "'" );
 }
 
 function communities_unstick_topic($topic_ID) {
 	global $wpdb;
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_sticky = '0' WHERE topic_ID = '" . $topic_ID . "'" );
 }
 
@@ -396,32 +396,32 @@ function communities_delete_post($topic_ID, $post_ID) {
 	global $wpdb;
 
 	$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "communities_posts WHERE post_ID = '" . $post_ID . "'" );
-	
+
 	communities_count_posts($topic_ID);
-	
+
 }
 
 function communities_add_page($community_ID, $parent_page_ID, $title, $content) {
 	global $wpdb;
-	
+
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
 	$title = strip_tags($title);
-	
+
 	$time = time();
 	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_pages (page_community_ID, page_parent_page_ID, page_title, page_content, page_stamp) VALUES ( '" . $community_ID . "', '" . $parent_page_ID . "', '" . addslashes( $title ) . "', '" . addslashes( $content ) . "', '" . $time . "')" );
 	$page_ID = $wpdb->get_var("SELECT page_ID FROM " . $wpdb->base_prefix . "communities_pages WHERE page_stamp = '" . $time . "' AND page_title = '" . addslashes( $title ) . "'");
-	
+
 	communities_page_notification($community_ID, $page_ID, $title);
-	
+
 	return 	$page_ID;
 }
 
 function communities_update_page($page_ID, $title, $content) {
 	global $wpdb;
-	
+
 	$title = strip_tags($title, '<a><p><ul><li><br><strong><img>');
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_pages SET page_title = '" . addslashes( $title ) . "' WHERE page_ID = '" . $page_ID . "'" );
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_pages SET page_content = '" . addslashes( $content ) . "' WHERE page_ID = '" . $page_ID . "'" );
 }
@@ -435,25 +435,25 @@ function communities_delete_page($page_ID) {
 
 function communities_add_news_item($community_ID, $title, $content) {
 	global $wpdb;
-	
+
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
 	$title = strip_tags($title);
-	
+
 	$time = time();
 	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_news_items (news_item_community_ID, news_item_title, news_item_content, news_item_stamp) VALUES ( '" . $community_ID . "', '" . addslashes( $title ) . "', '" . addslashes( $content ) . "', '" . $time . "')" );
 	$news_item_ID = $wpdb->get_var("SELECT news_item_ID FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_stamp = '" . $time . "' AND news_item_title = '" . addslashes( $title ) . "'");
-	
+
 	communities_news_notification($community_ID, $news_item_ID, $title);
-	
+
 	return 	$news_item_ID;
 }
 
 function communities_update_news_item($news_item_ID, $title, $content) {
 	global $wpdb;
-	
+
 	$title = strip_tags($title, '<a><p><ul><li><br><strong><img>');
 	$content = strip_tags($content, '<a><p><ul><li><br><strong><img>');
-	
+
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_news_items SET news_item_title = '" . addslashes( $title ) . "' WHERE news_item_ID = '" . $news_item_ID . "'" );
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_news_items SET news_item_content = '" . addslashes( $content ) . "' WHERE news_item_ID = '" . $news_item_ID . "'" );
 }
@@ -484,7 +484,7 @@ function communities_topic_notification($community_ID, $topic_ID, $title) {
 			$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_notifications (notification_community_ID, notification_user_ID, notification_stamp, notification_item_title, notification_item_url, notification_item_type) VALUES ( '" . $community_ID . "', '" . $digest_member['member_user_ID'] . "', '" . $time . "', '" . addslashes( $title ) . "', '" . $notification_item_url . "', 'topic')" );
 		}
 	}
-	
+
 	// instant
 
 	$query = "SELECT member_user_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_notifications = 'instant' AND community_ID = '" . $community_ID . "'";
@@ -499,15 +499,15 @@ function communities_topic_notification($community_ID, $topic_ID, $title) {
 		foreach ( $instant_members as $instant_member ) {
 			$loop_email_subject = $email_subject;
 			$loop_email_content = $email_content;
-			
+
 			$member_primary_blog = get_active_blog_for_user( $instant_member['member_user_ID'] );
 			$member_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $instant_member['member_user_ID'] . "'");
 			$notification_item_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . $item_url;
 			$notifications_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . 'wp-admin/communities.php?action=notifications&cid=' . $community_ID;
-			
+
 			$loop_email_content = str_replace('TOPIC_URL', $notification_item_url, $loop_email_content);
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
-			
+
 			$from_email = 'noreply@' . $current_site->domain;
 			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
@@ -535,7 +535,7 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 			$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_notifications (notification_community_ID, notification_user_ID, notification_stamp, notification_item_title, notification_item_url, notification_item_type) VALUES ( '" . $community_ID . "', '" . $digest_member['member_user_ID'] . "', '" . $time . "', '" . addslashes( $title ) . "', '" . $notification_item_url . "', 'page')" );
 		}
 	}
-	
+
 	// instant
 
 	$query = "SELECT member_user_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_notifications = 'instant' AND community_ID = '" . $community_ID . "'";
@@ -550,15 +550,15 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 		foreach ( $instant_members as $instant_member ) {
 			$loop_email_subject = $email_subject;
 			$loop_email_content = $email_content;
-			
+
 			$member_primary_blog = get_active_blog_for_user( $instant_member['member_user_ID'] );
 			$member_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $instant_member['member_user_ID'] . "'");
 			$notification_item_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . $item_url;
 			$notifications_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . 'wp-admin/communities.php?action=notifications&cid=' . $community_ID;
-			
+
 			$loop_email_content = str_replace('PAGE_URL', $notification_item_url, $loop_email_content);
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
-			
+
 			$from_email = 'noreply@' . $current_site->domain;
 			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
@@ -586,7 +586,7 @@ function communities_news_notification($community_ID, $news_item_ID, $title) {
 			$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_notifications (notification_community_ID, notification_user_ID, notification_stamp, notification_item_title, notification_item_url, notification_item_type) VALUES ( '" . $community_ID . "', '" . $digest_member['member_user_ID'] . "', '" . $time . "', '" . addslashes( $title ) . "', '" . $notification_item_url . "', 'news')" );
 		}
 	}
-	
+
 	// instant
 
 	$query = "SELECT member_user_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_notifications = 'instant' AND community_ID = '" . $community_ID . "'";
@@ -601,15 +601,15 @@ function communities_news_notification($community_ID, $news_item_ID, $title) {
 		foreach ( $instant_members as $instant_member ) {
 			$loop_email_subject = $email_subject;
 			$loop_email_content = $email_content;
-			
+
 			$member_primary_blog = get_active_blog_for_user( $instant_member['member_user_ID'] );
 			$member_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $instant_member['member_user_ID'] . "'");
 			$notification_item_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . $item_url;
 			$notifications_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . 'wp-admin/communities.php?action=notifications&cid=' . $community_ID;
-			
+
 			$loop_email_content = str_replace('NEWS_ITEM_URL', $notification_item_url, $loop_email_content);
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
-			
+
 			$from_email = 'noreply@' . $current_site->domain;
 			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
@@ -647,7 +647,7 @@ function communities_digest_notifications() {
 				$loop_email_content = str_replace('COMMUNITY_NAME', stripslashes( $community_details->community_name ), $loop_email_content);
 				$loop_email_content = str_replace('SITE_NAME', $current_site->site_name, $loop_email_content);
 				$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
-				
+
 				// topics
 
 				$query = "SELECT notification_item_title, notification_item_url FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'topic' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'";
@@ -673,7 +673,7 @@ function communities_digest_notifications() {
 						$notification_pages = $notification_pages . $page['notification_item_title'] . "\n";
 						$notification_pages = $notification_pages . $page['notification_item_url'] . "\n\n";
 					}
-					
+
 					$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'page' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'" );
 				} else {
 					$loop_email_content = str_replace('PAGES', '', $loop_email_content);
@@ -760,7 +760,7 @@ function communities_output() {
 			} else {
 				$num = intval( $_GET[ 'num' ] );
 			}
-			
+
 			$query = "SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '" . $user_ID . "'";
 			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 			$communities = $wpdb->get_results( $query, ARRAY_A );
@@ -776,17 +776,17 @@ function communities_output() {
                     <br />
                     <table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="communities.php?start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="communities.php?start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="communities.php?start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 					} else {
@@ -799,7 +799,7 @@ function communities_output() {
 				}
 				echo "
 				<br />
-				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 				<thead><tr>
 				<th scope='col'>" . __('Name') . "</th>
 				<th scope='col'>" . __('Owner') . "</th>
@@ -847,7 +847,7 @@ function communities_output() {
 	            <p><?php _e('You currently are not a member of a community. Please visit the "Find Communities" tab to search for communities to join. Alternatively you can create your own community using the form below!') ?></p>
                 <?php
 			}
-			
+
 			$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
 			?>
             <br />
@@ -860,32 +860,32 @@ function communities_output() {
 			} else {
 				?>
 				<p><?php _e('You can create up to 45 communities of your own using the form below.') ?></p>
-				<form name="create_community" method="POST" action="communities.php?action=create_community"> 
+				<form name="create_community" method="POST" action="communities.php?action=create_community">
 					<table class="form-table">
 					<tr valign="top">
 					<th scope="row"><?php _e('Name') ?></th>
 					<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo $_POST['community_name']; ?>" />
 					<br />
-					<?php _e('Required') ?></td> 
+					<?php _e('Required') ?></td>
 					</tr>
 					<tr valign="top">
 					<th scope="row"><?php _e('Description') ?></th>
 					<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
 					<br />
-					<?php _e('Required') ?></td> 
+					<?php _e('Required') ?></td>
 					</tr>
-					<tr valign="top"> 
-					<th scope="row"><?php _e('Private') ?></th> 
+					<tr valign="top">
+					<th scope="row"><?php _e('Private') ?></th>
 					<td><select name="community_private">
 						<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
 						<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 					</select>
-					<?php _e('Users have to enter a code to join private communities') ?></td> 
+					<?php _e('Users have to enter a code to join private communities') ?></td>
 					</tr>
 					</table>
-				<p class="submit"> 
-				<input type="submit" name="Submit" value="<?php _e('Create') ?>" /> 
-				</p> 
+				<p class="submit">
+				<input type="submit" name="Submit" value="<?php _e('Create') ?>" />
+				</p>
 				</form>
 				<?php
 			}
@@ -913,64 +913,64 @@ function communities_output() {
 					if ( empty( $_POST['community_name'] ) || empty( $_POST['community_description'] ) ) {
 						?>
 						<p><?php _e('Please fill in all fields.') ?></p>
-						<form name="create_community" method="POST" action="communities.php?action=create_community"> 
+						<form name="create_community" method="POST" action="communities.php?action=create_community">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Name') ?></th>
 							<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo $_POST['community_name']; ?>" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Description') ?></th>
 							<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
-							<tr valign="top"> 
-							<th scope="row"><?php _e('Private') ?></th> 
+							<tr valign="top">
+							<th scope="row"><?php _e('Private') ?></th>
 							<td><select name="community_private">
 								<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'community_private"'; ?>><?php _e('No'); ?></option>
 								<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 							</select>
-							<?php _e('Users have to enter a code to join private communities') ?></td> 
+							<?php _e('Users have to enter a code to join private communities') ?></td>
 							</tr>
 							</table>
-						<p class="submit"> 
-						<input type="submit" name="Submit" value="<?php _e('Create') ?>" /> 
-						</p> 
+						<p class="submit">
+						<input type="submit" name="Submit" value="<?php _e('Create') ?>" />
+						</p>
 						</form>
 						<?php
 					} else if ( $community_count > 0 ) {
 						?>
 						<p><?php _e('Sorry, a community with that name already exists.') ?></p>
-						<form name="create_community" method="POST" action="communities.php?action=create_community"> 
+						<form name="create_community" method="POST" action="communities.php?action=create_community">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Name') ?></th>
 							<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Description') ?></th>
 							<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
-							<tr valign="top"> 
-							<th scope="row"><?php _e('Private') ?></th> 
+							<tr valign="top">
+							<th scope="row"><?php _e('Private') ?></th>
 							<td><select name="community_private">
 								<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
 								<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 							</select>
-							<?php _e('Users have to enter a code to join private communities') ?></td> 
+							<?php _e('Users have to enter a code to join private communities') ?></td>
 							</tr>
 							</table>
-						<p class="submit"> 
+						<p class="submit">
                         <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
-						<input type="submit" name="Submit" value="<?php _e('Create') ?>" /> 
-						</p> 
+						<input type="submit" name="Submit" value="<?php _e('Create') ?>" />
+						</p>
 						</form>
 						<?php
 					} else {
@@ -995,19 +995,19 @@ function communities_output() {
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=notifications&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Notifications') ?></a></h2>
                 <form name="notifications" method="POST" action="communities.php?action=notifications_process&cid=<?php echo $_GET['cid']; ?>">
                     <table class="form-table">
-                    <tr valign="top"> 
-                    <th scope="row"><?php _e('Notifications') ?></th> 
+                    <tr valign="top">
+                    <th scope="row"><?php _e('Notifications') ?></th>
                     <td><select name="notifications">
                         <option value="instant" <?php if ( $member_notifications == 'instant' ) { echo 'selected="selected"'; } ?> ><?php _e('Instant'); ?></option>
                         <option value="digest" <?php if ( $member_notifications == 'digest' ) { echo 'selected="selected"'; } ?> ><?php _e('Daily Digest'); ?></option>
                         <option value="none" <?php if ( $member_notifications == 'none' ) { echo 'selected="selected"'; } ?> ><?php _e('None'); ?></option>
                     </select>
-                    </td> 
+                    </td>
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-                </p> 
+                <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+                </p>
                 </form>
 				<?php
 			}
@@ -1055,17 +1055,17 @@ function communities_output() {
 						<br />
 						<table><td>
 						<fieldset>
-						<?php 
-						
+						<?php
+
 						//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-						
-						if( $start == 0 ) { 
+
+						if( $start == 0 ) {
 							echo __('Previous Page');
-						} elseif( $start <= 30 ) { 
+						} elseif( $start <= 30 ) {
 							echo '<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 						} else {
 							echo '<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-						} 
+						}
 						if ( $next ) {
 							echo '&nbsp;||&nbsp;<a href="communities.php?action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 						} else {
@@ -1078,7 +1078,7 @@ function communities_output() {
 					}
 					echo "
 					<br />
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col'>" . __('Name') . "</th>
 					<th scope='col'>" . __('Avatar') . "</th>
@@ -1107,7 +1107,7 @@ function communities_output() {
 						$member_primary_blog = get_active_blog_for_user( $member['member_user_ID'] );
 						echo "<td valign='top'><a href='http://" . $member_primary_blog->domain . $member_primary_blog->path . "' rel='permalink' class='edit'>" . __('Visit Blog') . "</a></td>";
 						if ( $member['member_user_ID'] == $user_ID ) {
-							echo "<td valign='top'>" . __('Send Message') . "</td>";						
+							echo "<td valign='top'>" . __('Send Message') . "</td>";
 						} else {
 							echo "<td valign='top'><a href='inbox.php?page=new&message_to=" . $member_details->user_login . "' rel='permalink' class='edit'>" . __('Send Message') . "</a></td>";
 						}
@@ -1132,19 +1132,19 @@ function communities_output() {
                 <input type="hidden" name="search_terms" value="<?php echo $_GET['search_terms']; ?>" />
                 <input type="hidden" name="return" value="<?php echo $_GET['return']; ?>" />
                 <table class="form-table">
-                <tr valign="top"> 
-                <th scope="row"><?php _e('Are you sure?') ?></th> 
+                <tr valign="top">
+                <th scope="row"><?php _e('Are you sure?') ?></th>
                 <td><select name="leave_community">
                     <option value="no" selected="selected" ><?php _e('No'); ?></option>
                     <option value="yes" ><?php _e('Yes'); ?></option>
                 </select>
-                </td> 
+                </td>
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-            </p> 
+            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+            </p>
             </form>
             <?php
 		break;
@@ -1156,7 +1156,7 @@ function communities_output() {
 					<SCRIPT LANGUAGE='JavaScript'>
 					window.location='communities.php?page=find-communities&search_terms=" . $_POST['search_terms'] . "';
 					</script>
-					";				
+					";
 				} else {
 					echo "
 					<SCRIPT LANGUAGE='JavaScript'>
@@ -1175,7 +1175,7 @@ function communities_output() {
 					<SCRIPT LANGUAGE='JavaScript'>
 					window.location='communities.php?page=find-communities&search_terms=" . $_POST['search_terms'] . "&updated=true&updatedmsg=" . urlencode(__('Successfully left.')) . "';
 					</script>
-					";				
+					";
 				} else {
 					echo "
 					<SCRIPT LANGUAGE='JavaScript'>
@@ -1204,7 +1204,7 @@ function communities_output() {
 				} else {
 					$num = intval( $_GET[ 'num' ] );
 				}
-				
+
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_community_ID = '" . $_GET['cid'] . "'";
 				$query .= " ORDER BY topic_sticky DESC, topic_last_updated_stamp DESC";
 				$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
@@ -1221,17 +1221,17 @@ function communities_output() {
 						<br />
 						<table><td>
 						<fieldset>
-						<?php 
-						
+						<?php
+
 						//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-						
-						if( $start == 0 ) { 
+
+						if( $start == 0 ) {
 							echo __('Previous Page');
-						} elseif( $start <= 30 ) { 
+						} elseif( $start <= 30 ) {
 							echo '<a href="communities.php?action=message_board&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 						} else {
 							echo '<a href="communities.php?action=message_board&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-						} 
+						}
 						if ( $next ) {
 							echo '&nbsp;||&nbsp;<a href="communities.php?action=message_board&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 						} else {
@@ -1244,7 +1244,7 @@ function communities_output() {
 					}
 					echo "
 					<br />
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col'>" . __('Topic') . "</th>
 					<th scope='col'>" . __('Posts') . "</th>
@@ -1292,13 +1292,13 @@ function communities_output() {
 				?>
 				<br />
 				<h2><?php _e('New Topic') ?></h2>
-                <form name="new_topic" method="POST" action="communities.php?action=new_topic&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+                <form name="new_topic" method="POST" action="communities.php?action=new_topic&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title') ?></th>
                     <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo $_POST['topic_title']; ?>" />
                     <br />
-                    <?php _e('Required') ?></td> 
+                    <?php _e('Required') ?></td>
                     </tr>
                     <tr valign="top">
                     <th scope="row"><?php _e('Content') ?></th>
@@ -1310,21 +1310,21 @@ function communities_output() {
                     $member_moderator = $wpdb->get_var("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '" . $_GET['cid'] . "' AND member_user_ID = '" . $user_ID . "'");
 					if (  $member_moderator == '1' || is_site_admin() ) {
 					?>
-                        <tr valign="top"> 
-                        <th scope="row"><?php _e('Sticky') ?></th> 
+                        <tr valign="top">
+                        <th scope="row"><?php _e('Sticky') ?></th>
                         <td><select name="topic_sticky">
                             <option value="0" <?php if ($_POST['topic_sticky'] == '0' || $_POST['topic_sticky'] == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
                             <option value="1" <?php if ($_POST['topic_sticky'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
                         </select>
-						</td> 
+						</td>
                         </tr>
                     <?php
 					}
 					?>
                     </table>
-                <p class="submit"> 
-                <input type="submit" name="Submit" value="<?php _e('Post') ?>" /> 
-                </p> 
+                <p class="submit">
+                <input type="submit" name="Submit" value="<?php _e('Post') ?>" />
+                </p>
                 </form>
                 <?php
 			}
@@ -1355,13 +1355,13 @@ function communities_output() {
 					if ( empty( $_POST['topic_title'] ) || empty( $_POST['topic_content'] ) ) {
 						?>
                         <p><?php _e('Please fill in all fields.'); ?></p>
-                        <form name="new_topic" method="POST" action="communities.php?action=new_topic&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+                        <form name="new_topic" method="POST" action="communities.php?action=new_topic&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                             <table class="form-table">
                             <tr valign="top">
                             <th scope="row"><?php _e('Title') ?></th>
                             <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo $_POST['topic_title']; ?>" />
                             <br />
-                            <?php _e('Required') ?></td> 
+                            <?php _e('Required') ?></td>
                             </tr>
                             <tr valign="top">
                             <th scope="row"><?php _e('Content') ?></th>
@@ -1373,22 +1373,22 @@ function communities_output() {
                             $member_moderator = $wpdb->get_var("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '" . $_GET['cid'] . "' AND member_user_ID = '" . $user_ID . "'");
                             if (  $member_moderator == '1' || is_site_admin() ) {
                             ?>
-                                <tr valign="top"> 
-                                <th scope="row"><?php _e('Sticky') ?></th> 
+                                <tr valign="top">
+                                <th scope="row"><?php _e('Sticky') ?></th>
                                 <td><select name="topic_sticky">
                                     <option value="0" <?php if ($_POST['topic_sticky'] == '0' || $_POST['topic_sticky'] == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
                                     <option value="1" <?php if ($_POST['topic_sticky'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
                                 </select>
-                                </td> 
+                                </td>
                                 </tr>
                             <?php
                             }
                             ?>
                             </table>
-                        <p class="submit"> 
-                        <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
+                        <p class="submit">
+                        <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                         <input type="submit" name="Submit" value="<?php _e('Post') ?>" />
-                        </p> 
+                        </p>
                         </form>
                         <?php
 					} else {
@@ -1428,24 +1428,24 @@ function communities_output() {
                         <?php
 						if ( $topic_details->topic_closed == '1' ) {
 							?>
-							<a href="communities.php?action=open_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Open'); ?></a> | 
+							<a href="communities.php?action=open_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Open'); ?></a> |
 							<?php
 						} else {
 							?>
-							<a href="communities.php?action=close_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Close'); ?></a> | 
+							<a href="communities.php?action=close_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Close'); ?></a> |
 							<?php
 						}
 						if ( $topic_details->topic_sticky == '1' ) {
 							?>
-							<a href="communities.php?action=unstick_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Unstick'); ?></a> | 
+							<a href="communities.php?action=unstick_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Unstick'); ?></a> |
 							<?php
 						} else {
 							?>
-							<a href="communities.php?action=stick_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Make Sticky'); ?></a> | 
+							<a href="communities.php?action=stick_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Make Sticky'); ?></a> |
 							<?php
 						}
 						?>
-						<a href="communities.php?action=edit_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Edit Title'); ?></a> | 
+						<a href="communities.php?action=edit_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Edit Title'); ?></a> |
 						<a href="communities.php?action=remove_topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>" style="text-decoration:none;"><?php _e('Remove'); ?></a>
                         </li>
     	                <?php
@@ -1463,7 +1463,7 @@ function communities_output() {
 				} else {
 					$num = intval( $_GET[ 'num' ] );
 				}
-				
+
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities_posts WHERE post_topic_ID = '" . $_GET['tid'] . "'";
 				$query .= " ORDER BY post_ID ASC";
 				$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
@@ -1480,17 +1480,17 @@ function communities_output() {
 						<br />
 						<table><td>
 						<fieldset>
-						<?php 
-						
+						<?php
+
 						//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-						
-						if( $start == 0 ) { 
+
+						if( $start == 0 ) {
 							echo __('Previous Page');
-						} elseif( $start <= 15 ) { 
+						} elseif( $start <= 15 ) {
 							echo '<a href="communities.php?action=topic&tid=' . $_GET['tid'] . '&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 						} else {
 							echo '<a href="communities.php?action=topic&tid=' . $_GET['tid'] . '&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-						} 
+						}
 						if ( $next ) {
 							echo '&nbsp;||&nbsp;<a href="communities.php?action=topic&tid=' . $_GET['tid'] . '&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 						} else {
@@ -1503,7 +1503,7 @@ function communities_output() {
 					}
 					echo "
 					<br />
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col' width='100px'><center>" . __('Author') . "</center></th>
 					<th scope='col'>" . __('Post') . "</th>
@@ -1556,7 +1556,7 @@ function communities_output() {
 					?>
 					<br />
 					<h2><?php _e('New Post') ?></h2>
-					<form name="new_post" method="POST" action="communities.php?action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+					<form name="new_post" method="POST" action="communities.php?action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 						<table class="form-table">
 						<tr valign="top">
 						<th scope="row"><?php _e('Content') ?></th>
@@ -1565,14 +1565,14 @@ function communities_output() {
 						<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 						</tr>
 						</table>
-					<p class="submit"> 
-					<input type="submit" name="Submit" value="<?php _e('Post') ?>" /> 
-					</p> 
+					<p class="submit">
+					<input type="submit" name="Submit" value="<?php _e('Post') ?>" />
+					</p>
 					</form>
 					<?php
 				}
 			}
-            
+
 		break;
 		//---------------------------------------------------//
 		case "new_post":
@@ -1600,7 +1600,7 @@ function communities_output() {
 							?>
 							<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a></h2>
 							<p><?php _e('Please provide some content.'); ?></p>
-							<form name="new_post" method="POST" action="communities.php?action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+							<form name="new_post" method="POST" action="communities.php?action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 								<table class="form-table">
 								<tr valign="top">
 								<th scope="row"><?php _e('Content') ?></th>
@@ -1609,10 +1609,10 @@ function communities_output() {
 								<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 								</tr>
 								</table>
-							<p class="submit"> 
-							<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-							<input type="submit" name="Submit" value="<?php _e('Post') ?>" /> 
-							</p> 
+							<p class="submit">
+							<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+							<input type="submit" name="Submit" value="<?php _e('Post') ?>" />
+							</p>
 							</form>
 							<?php
 						} else {
@@ -1647,7 +1647,7 @@ function communities_output() {
 					$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_GET['cid'] . "'");
 					?>
 					<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post'); ?></h2>
-					<form name="edit_post" method="POST" action="communities.php?action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+					<form name="edit_post" method="POST" action="communities.php?action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 						<table class="form-table">
 						<tr valign="top">
 						<th scope="row"><?php _e('Content') ?></th>
@@ -1656,10 +1656,10 @@ function communities_output() {
 						<?php _e('Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 						</tr>
 						</table>
-					<p class="submit"> 
-					<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-					<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-					</p> 
+					<p class="submit">
+					<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+					<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+					</p>
 					</form>
 					<?php
 				}
@@ -1694,7 +1694,7 @@ function communities_output() {
 							?>
 							<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post'); ?></h2>
                             <p><?php _e('Please provide some content'); ?></p>
-							<form name="edit_post" method="POST" action="communities.php?action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+							<form name="edit_post" method="POST" action="communities.php?action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 								<table class="form-table">
 								<tr valign="top">
 								<th scope="row"><?php _e('Content') ?></th>
@@ -1703,10 +1703,10 @@ function communities_output() {
 								<?php _e('Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 								</tr>
 								</table>
-							<p class="submit"> 
-							<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-							<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-							</p> 
+							<p class="submit">
+							<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+							<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+							</p>
 							</form>
 							<?php
 						} else {
@@ -1740,21 +1740,21 @@ function communities_output() {
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Post'); ?></h2>
 
-				<form name="remove_post" method="POST" action="communities.php?action=remove_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+				<form name="remove_post" method="POST" action="communities.php?action=remove_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                     <table class="form-table">
-                    <tr valign="top"> 
-                    <th scope="row"><?php _e('Are you sure?') ?></th> 
+                    <tr valign="top">
+                    <th scope="row"><?php _e('Are you sure?') ?></th>
                     <td><select name="remove_post">
                         <option value="no" selected="selected" ><?php _e('No'); ?></option>
                         <option value="yes" ><?php _e('Yes'); ?></option>
                     </select>
-                    </td> 
+                    </td>
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-                </p> 
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+                </p>
                 </form>
 				<?php
 			}
@@ -1787,7 +1787,7 @@ function communities_output() {
 						<SCRIPT LANGUAGE='JavaScript'>
 						window.location='communities.php?action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Post removed.')) . "';
 						</script>
-						";					
+						";
 					} else {
 						if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 							echo "
@@ -1895,21 +1895,21 @@ function communities_output() {
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Topic'); ?></h2>
 
-				<form name="remove_topic" method="POST" action="communities.php?action=remove_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+				<form name="remove_topic" method="POST" action="communities.php?action=remove_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                     <table class="form-table">
-                    <tr valign="top"> 
-                    <th scope="row"><?php _e('Are you sure?') ?></th> 
+                    <tr valign="top">
+                    <th scope="row"><?php _e('Are you sure?') ?></th>
                     <td><select name="remove_topic">
                         <option value="no" selected="selected" ><?php _e('No'); ?></option>
                         <option value="yes" ><?php _e('Yes'); ?></option>
                     </select>
-                    </td> 
+                    </td>
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-                </p> 
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+                </p>
                 </form>
 				<?php
 			}
@@ -1966,19 +1966,19 @@ function communities_output() {
 				$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_GET['cid'] . "'");
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic'); ?></h2>
-                <form name="edit_topic" method="POST" action="communities.php?action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+                <form name="edit_topic" method="POST" action="communities.php?action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title') ?></th>
                     <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo stripslashes( $topic_details->topic_title ); ?>" />
                     <br />
-                    </td> 
+                    </td>
                     </tr>
                     </table>
-                <p class="submit"> 
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
+                <p class="submit">
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                 <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-                </p> 
+                </p>
                 </form>
                 <?php
 			}
@@ -2008,19 +2008,19 @@ function communities_output() {
 						?>
 						<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board') ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic'); ?></h2>
                         <p><?php _e('Please provide a title.'); ?></p>
-						<form name="edit_topic" method="POST" action="communities.php?action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+						<form name="edit_topic" method="POST" action="communities.php?action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title') ?></th>
 							<td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo stripslashes( $topic_details->topic_title ); ?>" />
 							<br />
-							</td> 
+							</td>
 							</tr>
 							</table>
-						<p class="submit"> 
-						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
+						<p class="submit">
+						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
 						<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-						</p> 
+						</p>
 						</form>
 						<?php
 					} else {
@@ -2059,7 +2059,7 @@ function communities_output() {
 					<a href="communities.php?action=new_page&ppid=0&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('New Page'); ?></a>
 					</li>
 					</ul>
-					<?php	
+					<?php
 				}
 				?>
 				<h3><?php _e('Pages') ?></h3>
@@ -2194,11 +2194,11 @@ function communities_output() {
                     <?php
 					if ( $depth < 6 ) {
 						?>
-						<a href="communities.php?action=new_page&ppid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('New Page'); ?></a> | 
+						<a href="communities.php?action=new_page&ppid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('New Page'); ?></a> |
 						<?php
                     }
                     ?>
-					<a href="communities.php?action=edit_page&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Edit Page'); ?></a> | 
+					<a href="communities.php?action=edit_page&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Edit Page'); ?></a> |
 					<a href="communities.php?action=remove_page&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Remove Page'); ?></a>
 					</li>
 					</ul>
@@ -2217,13 +2217,13 @@ function communities_output() {
 				$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_GET['cid'] . "'");
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki') ?></a> &raquo; <?php _e('New Page'); ?></h2>
-                <form name="new_page" method="POST" action="communities.php?action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>"> 
+                <form name="new_page" method="POST" action="communities.php?action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title') ?></th>
                     <td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo $_POST['page_title']; ?>" />
                     <br />
-                    <?php _e('Required') ?></td> 
+                    <?php _e('Required') ?></td>
                     </tr>
                     <tr valign="top">
                     <th scope="row"><?php _e('Content') ?></th>
@@ -2232,10 +2232,10 @@ function communities_output() {
                     <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
                     </tr>
                     </table>
-                <p class="submit"> 
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-                <input type="submit" name="Submit" value="<?php _e('Publish') ?>" /> 
-                </p> 
+                <p class="submit">
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+                <input type="submit" name="Submit" value="<?php _e('Publish') ?>" />
+                </p>
                 </form>
                 <?php
 			}
@@ -2264,13 +2264,13 @@ function communities_output() {
 						?>
 						<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki') ?></a> &raquo; <?php _e('New Page'); ?></h2>
                         <p><?php _e('Please fill in all fields.'); ?></p>
-						<form name="new_page" method="POST" action="communities.php?action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>"> 
+						<form name="new_page" method="POST" action="communities.php?action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title') ?></th>
 							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo $_POST['page_title']; ?>" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Content') ?></th>
@@ -2279,10 +2279,10 @@ function communities_output() {
 							<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 							</tr>
 							</table>
-						<p class="submit"> 
-						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-						<input type="submit" name="Submit" value="<?php _e('Publish') ?>" /> 
-						</p> 
+						<p class="submit">
+						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+						<input type="submit" name="Submit" value="<?php _e('Publish') ?>" />
+						</p>
 						</form>
 						<?php
 					} else {
@@ -2304,13 +2304,13 @@ function communities_output() {
 				$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_GET['cid'] . "'");
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki') ?></a> &raquo; <?php _e('Edit Page'); ?></h2>
-                <form name="new_page" method="POST" action="communities.php?action=edit_page_process&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>"> 
+                <form name="new_page" method="POST" action="communities.php?action=edit_page_process&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title') ?></th>
                     <td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo stripslashes( $page_details->page_title ); ?>" />
                     <br />
-                    <?php _e('Required') ?></td> 
+                    <?php _e('Required') ?></td>
                     </tr>
                     <tr valign="top">
                     <th scope="row"><?php _e('Content') ?></th>
@@ -2319,10 +2319,10 @@ function communities_output() {
                     <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
                     </tr>
                     </table>
-                <p class="submit"> 
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-                <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-                </p> 
+                <p class="submit">
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+                <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+                </p>
                 </form>
                 <?php
 			}
@@ -2351,13 +2351,13 @@ function communities_output() {
 						?>
 						<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki') ?></a> &raquo; <?php _e('Edit Page'); ?></h2>
                         <p><?php _e('Please fill in all fields.'); ?></p>
-						<form name="new_page" method="POST" action="communities.php?action=edit_page_process&pid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>"> 
+						<form name="new_page" method="POST" action="communities.php?action=edit_page_process&pid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title') ?></th>
 							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo $_POST['page_title']; ?>" />
 							<br />
-							<?php _e('Required') ?></td> 
+							<?php _e('Required') ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Content') ?></th>
@@ -2366,10 +2366,10 @@ function communities_output() {
 							<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 							</tr>
 							</table>
-						<p class="submit"> 
-						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-						<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-						</p> 
+						<p class="submit">
+						<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+						<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+						</p>
 						</form>
 						<?php
 					} else {
@@ -2392,19 +2392,19 @@ function communities_output() {
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki') ?></a> &raquo; <?php _e('Remove Page'); ?></h2>
                 <form name="leave_community" method="POST" action="communities.php?action=remove_page_process&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>">
                     <table class="form-table">
-                    <tr valign="top"> 
-                    <th scope="row"><?php _e('Are you sure?') ?></th> 
+                    <tr valign="top">
+                    <th scope="row"><?php _e('Are you sure?') ?></th>
                     <td><select name="remove_page">
                         <option value="no" selected="selected" ><?php _e('No'); ?></option>
                         <option value="yes" ><?php _e('Yes'); ?></option>
                     </select>
-                    </td> 
+                    </td>
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-                </p> 
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+                <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+                </p>
                 </form>
                 <?php
 			}
@@ -2499,12 +2499,12 @@ function communities_output() {
                             </div>
                             </div>
                         </div>
-                    
+
 
 
                         <div id='post-body' class="has-sidebar">
                         <div id='dashboard-widgets-main-content' class='has-sidebar-content'>
-        
+
                             <!---<div id='normal-sortables' class='meta-box-sortables'>--->
                             <div class='postbox-container' style='width:49%;'>
                             <div id='side-sortables' class='meta-box-sortables'>
@@ -2559,7 +2559,7 @@ function communities_output() {
                             </div>
                             </div>
                         </div>
-                        </div>              
+                        </div>
 					</div>
                 <div class="clear"></div>
                 </div>
@@ -2599,17 +2599,17 @@ function communities_output() {
                         ?>
                         <table><td>
                         <fieldset>
-                        <?php 
-                        
+                        <?php
+
                         //$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-                        
-                        if( $start == 0 ) { 
+
+                        if( $start == 0 ) {
                             echo __('Previous Page');
-                        } elseif( $start <= 30 ) { 
+                        } elseif( $start <= 30 ) {
                             echo '<a href="communities.php?page=manage-communities&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
                         } else {
                             echo '<a href="communities.php?page=manage-communities&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-                        } 
+                        }
                         if ( $next ) {
                             echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
                         } else {
@@ -2622,7 +2622,7 @@ function communities_output() {
                     }
                     echo "
                     <br />
-                    <table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+                    <table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
                     <thead><tr>
                     <th scope='col'>" . __('Title') . "</th>
                     <th scope='col'>" . __('Date/Time') . "</th>
@@ -2718,17 +2718,17 @@ function communities_manage_output() {
 					?>
 					<table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="communities.php?page=manage-communities&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="communities.php?page=manage-communities&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 					} else {
@@ -2741,7 +2741,7 @@ function communities_manage_output() {
 				}
 				echo "
 				<br />
-				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 				<thead><tr>
 				<th scope='col'>" . __('Name') . "</th>
 				<th scope='col'>" . __('Description') . "</th>
@@ -2795,7 +2795,7 @@ function communities_manage_output() {
                 <p>*<?php _e('Users must enter the code to join private communities.'); ?></p>
 				<?php
 			}
-			
+
 			$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
 			?>
             <br />
@@ -2808,32 +2808,32 @@ function communities_manage_output() {
 			} else {
 				?>
 				<p><?php _e('You can create up to 45 communities of your own using the form below.') ?></p>
-				<form name="create_community" method="POST" action="communities.php?action=create_community"> 
+				<form name="create_community" method="POST" action="communities.php?action=create_community">
 					<table class="form-table">
 					<tr valign="top">
 					<th scope="row"><?php _e('Name') ?></th>
 					<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo $_POST['community_name']; ?>" />
 					<br />
-					<?php _e('Required') ?></td> 
+					<?php _e('Required') ?></td>
 					</tr>
 					<tr valign="top">
 					<th scope="row"><?php _e('Description') ?></th>
 					<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
 					<br />
-					<?php _e('Required') ?></td> 
+					<?php _e('Required') ?></td>
 					</tr>
-					<tr valign="top"> 
-					<th scope="row"><?php _e('Private') ?></th> 
+					<tr valign="top">
+					<th scope="row"><?php _e('Private') ?></th>
 					<td><select name="community_private">
 						<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
 						<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 					</select>
-					<?php _e('Users have to enter a code to join private communities') ?></td> 
+					<?php _e('Users have to enter a code to join private communities') ?></td>
 					</tr>
 					</table>
-				<p class="submit"> 
-				<input type="submit" name="Submit" value="<?php _e('Create') ?>" /> 
-				</p> 
+				<p class="submit">
+				<input type="submit" name="Submit" value="<?php _e('Create') ?>" />
+				</p>
 				</form>
 				<?php
 			}
@@ -2852,21 +2852,21 @@ function communities_manage_output() {
 				<th scope="row"><?php _e('Description') ?></th>
 				<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo stripslashes( $community_description ); ?>" />
 				<br />
-				<?php _e('Required') ?></td> 
+				<?php _e('Required') ?></td>
 				</tr>
-				<tr valign="top"> 
-				<th scope="row"><?php _e('Private') ?></th> 
+				<tr valign="top">
+				<th scope="row"><?php _e('Private') ?></th>
 				<td><select name="community_private">
 					<option value="0" <?php if ($community_private == '0' || $community_private == '') echo 'selected="selected"'; ?>><?php _e('No'); ?></option>
 					<option value="1" <?php if ($community_private == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 				</select>
-				<?php _e('Users have to enter a code to join private communities') ?></td> 
+				<?php _e('Users have to enter a code to join private communities') ?></td>
 				</tr>
 				</table>
-			<p class="submit"> 
+			<p class="submit">
 			<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
 			<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-			</p> 
+			</p>
 			</form>
 			<?php
 		break;
@@ -2893,21 +2893,21 @@ function communities_manage_output() {
 						<th scope="row"><?php _e('Description') ?></th>
 						<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
 						<br />
-						<?php _e('Required') ?></td> 
+						<?php _e('Required') ?></td>
 						</tr>
-						<tr valign="top"> 
-						<th scope="row"><?php _e('Private') ?></th> 
+						<tr valign="top">
+						<th scope="row"><?php _e('Private') ?></th>
 						<td><select name="community_private">
 							<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'community_private"'; ?>><?php _e('No'); ?></option>
 							<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes'); ?></option>
 						</select>
-						<?php _e('Users have to enter a code to join private communities') ?></td> 
+						<?php _e('Users have to enter a code to join private communities') ?></td>
 						</tr>
 						</table>
 					<p class="submit">
-					<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-					<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" /> 
-					</p> 
+					<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+					<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+					</p>
 					</form>
 					<?php
 				} else {
@@ -2928,19 +2928,19 @@ function communities_manage_output() {
             <form name="edit_community" method="POST" action="communities.php?page=manage-communities&action=remove_community_process">
                 <input type="hidden" name="cid" value="<?php echo $_GET['cid']; ?>" />
                 <table class="form-table">
-                <tr valign="top"> 
-                <th scope="row"><?php _e('Are you sure?') ?></th> 
+                <tr valign="top">
+                <th scope="row"><?php _e('Are you sure?') ?></th>
                 <td><select name="remove_community">
                     <option value="no" selected="selected" ><?php _e('No'); ?></option>
                     <option value="yes" ><?php _e('Yes'); ?></option>
                 </select>
-                </td> 
+                </td>
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-            </p> 
+            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+            </p>
             </form>
             <?php
 		break;
@@ -3008,17 +3008,17 @@ function communities_manage_output() {
 					<br />
 					<table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 					} else {
@@ -3031,7 +3031,7 @@ function communities_manage_output() {
 				}
 				echo "
 				<br />
-				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 				<thead><tr>
 				<th scope='col'>" . __('Name') . "</th>
 				<th scope='col'>" . __('Avatar') . "</th>
@@ -3150,17 +3150,17 @@ function communities_manage_output() {
 					?>
 					<table><td>
 					<fieldset>
-					<?php 
-					
+					<?php
+
 					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
-					
-					if( $start == 0 ) { 
+
+					if( $start == 0 ) {
 						echo __('Previous Page');
-					} elseif( $start <= 30 ) { 
+					} elseif( $start <= 30 ) {
 						echo '<a href="communities.php?page=manage-communities&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page') . '</a>';
 					} else {
 						echo '<a href="communities.php?page=manage-communities&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page') . '</a>';
-					} 
+					}
 					if ( $next ) {
 						echo '&nbsp;||&nbsp;<a href="communities.php?page=manage-communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page') . '</a>';
 					} else {
@@ -3173,7 +3173,7 @@ function communities_manage_output() {
 				}
 				echo "
 				<br />
-				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 				<thead><tr>
 				<th scope='col'>" . __('Title') . "</th>
 				<th scope='col'>" . __('Date/Time') . "</th>
@@ -3206,28 +3206,28 @@ function communities_manage_output() {
 	            <p><?php _e('There currently aren\'t any news items for this community. Use the form below to add news!') ?></p>
                 <?php
 			}
-			
+
 			?>
             <br />
 			<h2><?php _e('New News Item') ?></h2>
-            <form name="new_news_item" method="POST" action="communities.php?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+            <form name="new_news_item" method="POST" action="communities.php?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                 <table class="form-table">
                 <tr valign="top">
                 <th scope="row"><?php _e('Title') ?></th>
                 <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo $_POST['news_item_title']; ?>" />
                 <br />
-                <?php _e('Required') ?></td> 
+                <?php _e('Required') ?></td>
                 </tr>
                 <tr valign="top">
                 <th scope="row"><?php _e('Content') ?></th>
                 <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo $_POST['news_item_content']; ?></textarea>
                 <br />
-                <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td> 
+                <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
                 </tr>
                 </table>
-            <p class="submit"> 
-            <input type="submit" name="Submit" value="<?php _e('Publish') ?>" /> 
-            </p> 
+            <p class="submit">
+            <input type="submit" name="Submit" value="<?php _e('Publish') ?>" />
+            </p>
             </form>
             <?php
 		break;
@@ -3259,25 +3259,25 @@ function communities_manage_output() {
 				if ( empty( $_POST['news_item_title'] ) || empty( $_POST['news_item_content'] ) ) {
 					?>
 					<p><?php _e('Please fill in all fields.'); ?></p>
-                    <form name="new_news_item" method="POST" action="communities.php?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+                    <form name="new_news_item" method="POST" action="communities.php?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                         <table class="form-table">
                         <tr valign="top">
                         <th scope="row"><?php _e('Title') ?></th>
                         <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo $_POST['news_item_title']; ?>" />
                         <br />
-                        <?php _e('Required') ?></td> 
+                        <?php _e('Required') ?></td>
                         </tr>
                         <tr valign="top">
                         <th scope="row"><?php _e('Content') ?></th>
                         <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo $_POST['news_item_content']; ?></textarea>
                         <br />
-                        <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td> 
+                        <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
                         </tr>
                         </table>
-                    <p class="submit"> 
+                    <p class="submit">
                     <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                     <input type="submit" name="Submit" value="<?php _e('Publish') ?>" />
-                    </p> 
+                    </p>
                     </form>
 					<?php
 
@@ -3302,25 +3302,25 @@ function communities_manage_output() {
 			$news_item_content = $wpdb->get_var("SELECT news_item_content FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_ID = '" . $_GET['niid'] . "'");
 			?>
 			<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit News Item') ?></h2>
-			<form name="edit_news_item" method="POST" action="communities.php?page=manage-communities&action=edit_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>"> 
+			<form name="edit_news_item" method="POST" action="communities.php?page=manage-communities&action=edit_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
 				<table class="form-table">
 				<tr valign="top">
 				<th scope="row"><?php _e('Title') ?></th>
 				<td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo stripslashes( $news_item_title ); ?>" />
 				<br />
-				<?php _e('Required') ?></td> 
+				<?php _e('Required') ?></td>
 				</tr>
 				<tr valign="top">
 				<th scope="row"><?php _e('Content') ?></th>
 				<td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo stripslashes( $news_item_content ); ?></textarea>
 				<br />
-				<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td> 
+				<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
 				</tr>
 				</table>
-			<p class="submit"> 
+			<p class="submit">
 			<input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
 			<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-			</p> 
+			</p>
 			</form>
 			<?php
 		break;
@@ -3358,19 +3358,19 @@ function communities_manage_output() {
                         <th scope="row"><?php _e('Title') ?></th>
                         <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo $_POST['news_item_title']; ?>" />
                         <br />
-                        <?php _e('Required') ?></td> 
+                        <?php _e('Required') ?></td>
                         </tr>
                         <tr valign="top">
                         <th scope="row"><?php _e('Content') ?></th>
                         <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo $_POST['news_item_content']; ?></textarea>
                         <br />
-                        <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td> 
+                        <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>') ?></td>
                         </tr>
                         </table>
-                    <p class="submit"> 
+                    <p class="submit">
                     <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                     <input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-                    </p> 
+                    </p>
                     </form>
 					<?php
 
@@ -3403,19 +3403,19 @@ function communities_manage_output() {
 			<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Remove News Item') ?></h2>
             <form name="remove_news_item" method="POST" action="communities.php?page=manage-communities&action=remove_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
                 <table class="form-table">
-                <tr valign="top"> 
-                <th scope="row"><?php _e('Are you sure?') ?></th> 
+                <tr valign="top">
+                <th scope="row"><?php _e('Are you sure?') ?></th>
                 <td><select name="remove_news_item">
                     <option value="no" selected="selected" ><?php _e('No'); ?></option>
                     <option value="yes" ><?php _e('Yes'); ?></option>
                 </select>
-                </td> 
+                </td>
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
-            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" /> 
-            </p> 
+            <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
+            <input type="submit" name="Submit" value="<?php _e('Continue') ?>" />
+            </p>
             </form>
             <?php
 		break;
@@ -3481,20 +3481,20 @@ function communities_find_output() {
             </form>
             <?php
 			if ($search_terms != ''){
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities 
+				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities
 					WHERE (community_name LIKE '%" . $search_terms . "%'
 					OR community_description LIKE '%" . $search_terms . "%')
 					ORDER BY community_name ASC LIMIT 50";
 				$search_results = $wpdb->get_results( $query, ARRAY_A );
-				
+
 				if (count($search_results) > 0){
 					echo "
 					<br />
-					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'> 
+					<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
 					<thead><tr>
 					<th scope='col'>" . __('Name') . "</th>
 					<th scope='col'>" . __('Description') . "</th>
-					<th scope='col'>" . __('Public') . "</th>					
+					<th scope='col'>" . __('Public') . "</th>
 					<th scope='col'>" . __('Owner') . "</th>
 					<th scope='col'>" . __('Actions') . "</th>
 					<th scope='col'></th>
@@ -3551,7 +3551,7 @@ function communities_find_output() {
 			if ( $community_owner_user_ID == $user_ID ) {
 				die('Nice try');
 			}
-			
+
 			if ( $community_private != '1' ) {
 				communities_join_community($user_ID, $_GET['cid']);
 				echo "
@@ -3575,9 +3575,9 @@ function communities_find_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
+                <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                 <input type="submit" name="Submit" value="<?php _e('Join') ?>" />
-                </p> 
+                </p>
                 </form>
 				<?php
 			}
@@ -3612,9 +3612,9 @@ function communities_find_output() {
                         </tr>
                         </table>
                     <p class="submit">
-                    <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" /> 
+                    <input type="submit" name="Cancel" value="<?php _e('Cancel') ?>" />
                     <input type="submit" name="Submit" value="<?php _e('Join') ?>" />
-                    </p> 
+                    </p>
                     </form>
 				<?php
 				} else {
