@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Andrew Billits, Andrey Shipilov (Incsub)
-Version: 1.1.5
+Version: 1.1.6
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.5';
+$communities_current_version = '1.1.6';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -1422,8 +1422,8 @@ function communities_output() {
 				?>
 				<h2><a href="communities.php?action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="communities.php?action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="communities.php?action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a><?php if ( $topic_details->topic_closed == '1' ) { echo ' (' . __('Closed', $communities_text_domain) . ')'; }; ?></h2>
                 <ul>
-	                <li><strong><?php _e('Started', $communities_text_domain); ?>:</strong> <?php echo date($date_format . ' ' . $time_format,$topic_details->topic_stamp); ?></li>
-	                <li><strong><?php _e('Last Updated', $communities_text_domain); ?>:</strong> <?php echo date($date_format . ' ' . $time_format,$topic_details->topic_last_updated_stamp); ?></li>
+	                <li><strong><?php _e('Started', $communities_text_domain); ?>:</strong> <?php echo date_i18n($date_format . ' ' . $time_format,$topic_details->topic_stamp); ?></li>
+	                <li><strong><?php _e('Last Updated', $communities_text_domain); ?>:</strong> <?php echo date_i18n($date_format . ' ' . $time_format,$topic_details->topic_last_updated_stamp); ?></li>
                     <?php
                     $last_poster_details = $wpdb->get_row("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '" . $topic_details->topic_last_author . "'");
                     $last_poster_primary_blog = get_active_blog_for_user( $topic_details->topic_last_author );
@@ -1539,7 +1539,7 @@ function communities_output() {
 						echo "<p>" . stripslashes( $post['post_content'] ) . "</p>";
 						echo "<br />";
 						echo "<div style='border-top:#cccccc solid 1px;' >";
-						echo __("Posted", $communities_text_domain) . ": " . date($date_format . ' ' . $time_format, $post['post_stamp']);
+						echo __("Posted", $communities_text_domain) . ": " . date_i18n($date_format . ' ' . $time_format, $post['post_stamp']);
 						$time_difference = time() - $post['post_stamp'];
 						if ( $member_moderator == '1' || is_site_admin() ) {
 							echo " | <a href='communities.php?action=edit_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' style='text-decoration:none;'>" . __("Edit", $communities_text_domain) . "</a>";
@@ -2645,7 +2645,7 @@ function communities_output() {
                         //=========================================================//
                         echo "<tr class='" . $class . "'>";
                         echo "<td valign='top'><a href='communities.php?action=news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'><strong>" . stripslashes( $news_item['news_item_title'] ) . "</strong></a></td>";
-                        echo "<td valign='top'>" . date( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
+                        echo "<td valign='top'>" . date_i18n( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
                         echo "</tr>";
                         $class = ('alternate' == $class) ? '' : 'alternate';
                         //=========================================================//
@@ -3198,7 +3198,7 @@ function communities_manage_output() {
 					//=========================================================//
 					echo "<tr class='" . $class . "'>";
 					echo "<td valign='top'><strong>" . stripslashes( $news_item['news_item_title'] ) . "</strong></td>";
-					echo "<td valign='top'>" . date( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
+					echo "<td valign='top'>" . date_i18n( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
 					echo "<td valign='top'><a href='communities.php?page=manage-communities&action=edit_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' rel='permalink' class='edit'>" . __('Edit', $communities_text_domain) . "</a></td>";
 					echo "<td valign='top'><a href='communities.php?page=manage-communities&action=remove_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' rel='permalink' class='delete'>" . __('Remove', $communities_text_domain) . "</a></td>";
 					echo "</tr>";
