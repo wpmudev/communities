@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Andrew Billits, Andrey Shipilov (Incsub)
-Version: 1.1.6
+Version: 1.1.7
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,19 +26,26 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.6';
+$communities_current_version = '1.1.7';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
 $communities_notifications_default = 'digest'; // 'digest', 'instant', OR 'none'
 $communities_text_domain = 'communities'; // 'digest', 'instant', OR 'none'
 
+//------------------------------------------------------------------------//
+//---Hook-----------------------------------------------------------------//
+//------------------------------------------------------------------------//
+
+load_muplugin_textdomain( $communities_text_domain, '/communities-languages/' );
+
+
 $communities_notifications_digest_subject = __("COMMUNITY_NAME newsletter", $communities_text_domain);
-$communities_notifications_digest_content = __("Hi COMMUNITY_NAME subscriber,
+$communities_notifications_digest_content = change_email_body_to_html( __(
+"Hi COMMUNITY_NAME subscriber,
 
 The following new items have been posted to COMMUNITY_NAME over the
-last 24 hours, click on the link next to each item to access it on the
-site.
+last 24 hours, click on the link next to each item to access it on the site.
 
 TOPICS
 
@@ -50,10 +57,11 @@ Cheers, The SITE_NAME Team
 
 
 To receive instant notifications or to turn off notifications please
-visit: NOTIFCATIONS_URL", $communities_text_domain);
+visit: NOTIFCATIONS_URL", $communities_text_domain ) );
 
 $communities_notifications_instant_news_subject = __("New news at COMMUNITY_NAME", $communities_text_domain);
-$communities_notifications_instant_news_content = __("Hi COMMUNITY_NAME subscriber,
+$communities_notifications_instant_news_content = change_email_body_to_html(  __(
+"Hi COMMUNITY_NAME subscriber,
 
 There's a new news item called 'NEWS_ITEM_TITLE' at COMMUNITY_NAME.
 
@@ -63,10 +71,11 @@ Cheers, The SITE_NAME Team
 
 
 To receive daily digest notifications or to turn off notifications
-please visit: NOTIFCATIONS_URL", $communities_text_domain);
+please visit: NOTIFCATIONS_URL", $communities_text_domain ) );
 
 $communities_notifications_instant_page_subject = __("New wiki page at COMMUNITY_NAME", $communities_text_domain);
-$communities_notifications_instant_page_content = __("Hi COMMUNITY_NAME subscriber,
+$communities_notifications_instant_page_content = change_email_body_to_html( __(
+"Hi COMMUNITY_NAME subscriber,
 
 There's a new wiki page called 'PAGE_TITLE' at COMMUNITY_NAME.
 
@@ -76,10 +85,11 @@ Cheers, The SITE_NAME Team
 
 
 To receive daily digest notifications or to turn off notifications
-please visit: NOTIFCATIONS_URL", $communities_text_domain);
+please visit: NOTIFCATIONS_URL", $communities_text_domain ) );
 
 $communities_notifications_instant_topic_subject = __("New topic at COMMUNITY_NAME", $communities_text_domain);
-$communities_notifications_instant_topic_content = __("Hi COMMUNITY_NAME subscriber,
+$communities_notifications_instant_topic_content = change_email_body_to_html( __(
+"Hi COMMUNITY_NAME subscriber,
 
 There's a new topic called 'TOPIC_TITLE' at COMMUNITY_NAME.
 
@@ -89,11 +99,10 @@ Cheers, The SITE_NAME Team
 
 
 To receive daily digest notifications or to turn off notifications
-please visit: NOTIFCATIONS_URL", $communities_text_domain);
+please visit: NOTIFCATIONS_URL", $communities_text_domain ) );
 
-//------------------------------------------------------------------------//
-//---Hook-----------------------------------------------------------------//
-//------------------------------------------------------------------------//
+
+
 //check for activating
 if ($_GET['key'] == '' || $_GET['key'] === ''){
 	add_action('admin_head', 'communities_make_current');
@@ -104,16 +113,18 @@ if ( $_GET['action'] == 'dashboard' ) {
 if ( $_GET['action'] == 'digest_notifications' ) {
 	communities_digest_notifications();
 }
-add_action('init', 'communities_textdomain');
+
 add_action('admin_menu', 'communities_plug_pages');
 add_action('wpabar_menuitems', 'communities_admin_bar');
 add_action('communities_digest_notifications_cron', 'communities_digest_notifications');
+
 //------------------------------------------------------------------------//
 //---Functions------------------------------------------------------------//
 //------------------------------------------------------------------------//
-function communities_textdomain() {
-    global $communities_text_domain;
-    load_muplugin_textdomain( $communities_text_domain, '/communities-languages/' );
+
+//replaced \n \r endings on <br />
+function change_email_body_to_html( $body ) {
+    return preg_replace( '/\r\n|\n\r|\n|\r/', '<br />', $body );
 }
 
 
@@ -517,7 +528,7 @@ function communities_topic_notification($community_ID, $topic_ID, $title) {
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
 
 			$from_email = 'noreply@' . $current_site->domain;
-			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
+			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/html; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
 		}
 	}
@@ -568,7 +579,7 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
 
 			$from_email = 'noreply@' . $current_site->domain;
-			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
+			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/html; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
 		}
 	}
@@ -619,7 +630,7 @@ function communities_news_notification($community_ID, $news_item_ID, $title) {
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
 
 			$from_email = 'noreply@' . $current_site->domain;
-			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
+			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/html; charset=\"" . $blog_charset . "\"\n";
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
 		}
 	}
@@ -661,10 +672,10 @@ function communities_digest_notifications() {
 				$query = "SELECT notification_item_title, notification_item_url FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'topic' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'";
 				$topics = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $topics ) > 0 ) {
-					$notification_topics = __('New Topics', $communities_text_domain) . ":\n\n";
+					$notification_topics = __('New Topics', $communities_text_domain) . ":<br /><br />";
 					foreach ( $topics as $topic ) {
-						$notification_topics = $notification_topics . $topic['notification_item_title'] . "\n";
-						$notification_topics = $notification_topics . $topic['notification_item_url'] . "\n\n";
+						$notification_topics = $notification_topics . $topic['notification_item_title'] . "<br />";
+						$notification_topics = $notification_topics . $topic['notification_item_url'] . "<br /><br />";
 					}
 					$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'topic' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'" );
 				} else {
@@ -676,10 +687,10 @@ function communities_digest_notifications() {
 				$query = "SELECT notification_item_title, notification_item_url FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'page' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'";
 				$pages = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $pages ) > 0 ) {
-					$notification_pages = __('New Pages', $communities_text_domain) . ":\n\n";
+					$notification_pages = __('New Pages', $communities_text_domain) . ":<br /><br />";
 					foreach ( $pages as $page ) {
-						$notification_pages = $notification_pages . $page['notification_item_title'] . "\n";
-						$notification_pages = $notification_pages . $page['notification_item_url'] . "\n\n";
+						$notification_pages = $notification_pages . $page['notification_item_title'] . "<br />";
+						$notification_pages = $notification_pages . $page['notification_item_url'] . "<br /><br />";
 					}
 
 					$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'page' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'" );
@@ -692,10 +703,10 @@ function communities_digest_notifications() {
 				$query = "SELECT notification_item_title, notification_item_url FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'news' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'";
 				$news_items = $wpdb->get_results( $query, ARRAY_A );
 				if ( count( $news_items ) > 0 ) {
-					$notification_news_items = __('New News', $communities_text_domain) . ":\n\n";
+					$notification_news_items = __('New News', $communities_text_domain) . ":<br /><br />";
 					foreach ( $news_items as $news_item ) {
-						$notification_news_items = $notification_news_items . $news_item['notification_item_title'] . "\n";
-						$notification_news_items = $notification_news_items . $news_item['notification_item_url'] . "\n\n";
+						$notification_news_items = $notification_news_items . $news_item['notification_item_title'] . "<br />";
+						$notification_news_items = $notification_news_items . $news_item['notification_item_url'] . "<br /><br />";
 					}
 					$wpdb->query( "DELETE FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_item_type = 'news' AND notification_community_ID = '" . $digest_member['community_ID'] . "' AND notification_user_ID = '" . $digest_member['member_user_ID'] . "'" );
 				} else {
@@ -706,7 +717,7 @@ function communities_digest_notifications() {
 				$loop_email_content = str_replace('NEWS', $notification_news_items, $loop_email_content);
 				if ( count( $news_items ) > 0 || count( $topics ) > 0 || count( $pages ) > 0 ) {
 					$from_email = 'noreply@' . $current_site->domain;
-					$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/plain; charset=\"" . $blog_charset . "\"\n";
+					$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/html; charset=\"" . $blog_charset . "\"1";
 					wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
 				}
 			}
