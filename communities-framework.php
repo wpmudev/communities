@@ -33,6 +33,9 @@ $communities_current_version = '1.1.8';
 $communities_notifications_default = 'digest'; // 'digest', 'instant', OR 'none'
 $communities_text_domain = 'communities'; // 'digest', 'instant', OR 'none'
 
+include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
+
+
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
