@@ -1,9 +1,16 @@
 Plugin Name: Communities
-Author: Andrew Billits, Andrey Shipilov (Incsub)  
+Author: Paul Menard (Incsub), Andrew Billits, Andrey Shipilov (Incsub)  
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+1.1.8 - 2012/10/28
+----------------------------------------------------------------------
+- Fixed some PHP Notices/Warnings per http://premium.wpmudev.org/forums/topic/noticeafter-new-multisite-install
+- Changed logic to NOT require copy of any files to the wp-admin folder. 
+- Added hook to plugin activation to create needed tables instead of running manual sql.txt file. 
+- Added dependency checking on Avatars and Messaging plugin. Instead of displaying bad links and broken images. 
 
 1.1.7 - 10/09/2011
 ----------------------------------------------------------------------
@@ -41,7 +48,7 @@ Change Log:
 
 1.1.0 - 03/31/2009
 ----------------------------------------------------------------------
-- Fixed find communites description search bug
+- Fixed find communities description search bug
 - Fixed member count bug
 - Fixed join community bug
 
