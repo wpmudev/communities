@@ -3,8 +3,8 @@
 Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
-Author: Paul Menard (Incsub), Andrew Billits, Andrey Shipilov (Incsub)
-Version: 1.1.8
+Author: Paul Menard (Incsub)
+Version: 1.1.9
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.8';
+$communities_current_version = '1.1.9';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//

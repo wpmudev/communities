@@ -1,0 +1,966 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: communities\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-10-09 13:46+0200\n"
+"PO-Revision-Date: 2012-12-08 08:40-0500\n"
+"Last-Translator: Paul Menard <paul@codehooligans.com>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-KeywordsList: __;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-Language: English\n"
+"X-Poedit-SearchPath-0: c:\\communities\n"
+
+#: c:\communities/communities-framework.php:43
+msgid "COMMUNITY_NAME newsletter"
+msgstr ""
+
+#: c:\communities/communities-framework.php:45
+msgid ""
+"Hi COMMUNITY_NAME subscriber,\n"
+"\n"
+"The following new items have been posted to COMMUNITY_NAME over the\n"
+"last 24 hours, click on the link next to each item to access it on the site.\n"
+"\n"
+"TOPICS\n"
+"\n"
+"PAGES\n"
+"\n"
+"NEWS\n"
+"\n"
+"Cheers, The SITE_NAME Team\n"
+"\n"
+"\n"
+"To receive instant notifications or to turn off notifications please\n"
+"visit: NOTIFCATIONS_URL"
+msgstr ""
+
+#: c:\communities/communities-framework.php:62
+msgid "New news at COMMUNITY_NAME"
+msgstr ""
+
+#: c:\communities/communities-framework.php:64
+msgid ""
+"Hi COMMUNITY_NAME subscriber,\n"
+"\n"
+"There's a new news item called 'NEWS_ITEM_TITLE' at COMMUNITY_NAME.\n"
+"\n"
+"Click on the following link to read it: NEWS_ITEM_URL\n"
+"\n"
+"Cheers, The SITE_NAME Team\n"
+"\n"
+"\n"
+"To receive daily digest notifications or to turn off notifications\n"
+"please visit: NOTIFCATIONS_URL"
+msgstr ""
+
+#: c:\communities/communities-framework.php:76
+msgid "New wiki page at COMMUNITY_NAME"
+msgstr ""
+
+#: c:\communities/communities-framework.php:78
+msgid ""
+"Hi COMMUNITY_NAME subscriber,\n"
+"\n"
+"There's a new wiki page called 'PAGE_TITLE' at COMMUNITY_NAME.\n"
+"\n"
+"Click on the following link to read it: PAGE_URL\n"
+"\n"
+"Cheers, The SITE_NAME Team\n"
+"\n"
+"\n"
+"To receive daily digest notifications or to turn off notifications\n"
+"please visit: NOTIFCATIONS_URL"
+msgstr ""
+
+#: c:\communities/communities-framework.php:90
+msgid "New topic at COMMUNITY_NAME"
+msgstr ""
+
+#: c:\communities/communities-framework.php:92
+msgid ""
+"Hi COMMUNITY_NAME subscriber,\n"
+"\n"
+"There's a new topic called 'TOPIC_TITLE' at COMMUNITY_NAME.\n"
+"\n"
+"Click on the following link to read it: TOPIC_URL\n"
+"\n"
+"Cheers, The SITE_NAME Team\n"
+"\n"
+"\n"
+"To receive daily digest notifications or to turn off notifications\n"
+"please visit: NOTIFCATIONS_URL"
+msgstr ""
+
+#: c:\communities/communities-framework.php:255
+msgid "communities"
+msgstr ""
+
+#: c:\communities/communities-framework.php:255
+#: c:\communities/communities-framework.php:257
+#: c:\communities/communities-framework.php:259
+#: c:\communities/communities-framework.php:770
+#: c:\communities/communities-framework.php:2709
+#: c:\communities/communities.php:3
+msgid "Communities"
+msgstr ""
+
+#: c:\communities/communities-framework.php:257
+msgid "Manage Communities"
+msgstr ""
+
+#: c:\communities/communities-framework.php:259
+#: c:\communities/communities-framework.php:3495
+msgid "Find Communities"
+msgstr ""
+
+#: c:\communities/communities-framework.php:675
+msgid "New Topics"
+msgstr ""
+
+#: c:\communities/communities-framework.php:690
+msgid "New Pages"
+msgstr ""
+
+#: c:\communities/communities-framework.php:706
+msgid "New News"
+msgstr ""
+
+#: c:\communities/communities-framework.php:803
+#: c:\communities/communities-framework.php:805
+#: c:\communities/communities-framework.php:807
+#: c:\communities/communities-framework.php:1082
+#: c:\communities/communities-framework.php:1084
+#: c:\communities/communities-framework.php:1086
+#: c:\communities/communities-framework.php:1248
+#: c:\communities/communities-framework.php:1250
+#: c:\communities/communities-framework.php:1252
+#: c:\communities/communities-framework.php:1507
+#: c:\communities/communities-framework.php:1509
+#: c:\communities/communities-framework.php:1511
+#: c:\communities/communities-framework.php:2626
+#: c:\communities/communities-framework.php:2628
+#: c:\communities/communities-framework.php:2630
+#: c:\communities/communities-framework.php:2745
+#: c:\communities/communities-framework.php:2747
+#: c:\communities/communities-framework.php:2749
+#: c:\communities/communities-framework.php:3035
+#: c:\communities/communities-framework.php:3037
+#: c:\communities/communities-framework.php:3039
+#: c:\communities/communities-framework.php:3177
+#: c:\communities/communities-framework.php:3179
+#: c:\communities/communities-framework.php:3181
+msgid "Previous Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:810
+#: c:\communities/communities-framework.php:812
+#: c:\communities/communities-framework.php:1089
+#: c:\communities/communities-framework.php:1091
+#: c:\communities/communities-framework.php:1255
+#: c:\communities/communities-framework.php:1257
+#: c:\communities/communities-framework.php:1514
+#: c:\communities/communities-framework.php:1516
+#: c:\communities/communities-framework.php:2633
+#: c:\communities/communities-framework.php:2635
+#: c:\communities/communities-framework.php:2752
+#: c:\communities/communities-framework.php:2754
+#: c:\communities/communities-framework.php:3042
+#: c:\communities/communities-framework.php:3044
+#: c:\communities/communities-framework.php:3184
+#: c:\communities/communities-framework.php:3186
+msgid "Next Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:823
+#: c:\communities/communities-framework.php:885
+#: c:\communities/communities-framework.php:938
+#: c:\communities/communities-framework.php:969
+#: c:\communities/communities-framework.php:1102
+#: c:\communities/communities-framework.php:2765
+#: c:\communities/communities-framework.php:2833
+#: c:\communities/communities-framework.php:3055
+#: c:\communities/communities-framework.php:3514
+msgid "Name"
+msgstr ""
+
+#: c:\communities/communities-framework.php:824
+#: c:\communities/communities-framework.php:1123
+#: c:\communities/communities-framework.php:3517
+msgid "Owner"
+msgstr ""
+
+#: c:\communities/communities-framework.php:825
+#: c:\communities/communities-framework.php:1105
+#: c:\communities/communities-framework.php:1446
+#: c:\communities/communities-framework.php:2077
+#: c:\communities/communities-framework.php:2212
+#: c:\communities/communities-framework.php:2768
+#: c:\communities/communities-framework.php:3058
+#: c:\communities/communities-framework.php:3199
+#: c:\communities/communities-framework.php:3518
+msgid "Actions"
+msgstr ""
+
+#: c:\communities/communities-framework.php:844
+#: c:\communities/communities-framework.php:1213
+#: c:\communities/communities-framework.php:1372
+#: c:\communities/communities-framework.php:1434
+#: c:\communities/communities-framework.php:1620
+#: c:\communities/communities-framework.php:1668
+#: c:\communities/communities-framework.php:1714
+#: c:\communities/communities-framework.php:1760
+#: c:\communities/communities-framework.php:1915
+#: c:\communities/communities-framework.php:1987
+#: c:\communities/communities-framework.php:2028
+#: c:\communities/communities-framework.php:2801
+msgid "Message Board"
+msgstr ""
+
+#: c:\communities/communities-framework.php:845
+#: c:\communities/communities-framework.php:2070
+#: c:\communities/communities-framework.php:2205
+#: c:\communities/communities-framework.php:2238
+#: c:\communities/communities-framework.php:2284
+#: c:\communities/communities-framework.php:2325
+#: c:\communities/communities-framework.php:2371
+#: c:\communities/communities-framework.php:2411
+#: c:\communities/communities-framework.php:2802
+msgid "Wiki"
+msgstr ""
+
+#: c:\communities/communities-framework.php:846
+#: c:\communities/communities-framework.php:2594
+#: c:\communities/communities-framework.php:2683
+#: c:\communities/communities-framework.php:2803
+msgid "News"
+msgstr ""
+
+#: c:\communities/communities-framework.php:848
+#: c:\communities/communities-framework.php:1050
+#: c:\communities/communities-framework.php:2797
+#: c:\communities/communities-framework.php:2799
+#: c:\communities/communities-framework.php:3003
+msgid "Members"
+msgstr ""
+
+#: c:\communities/communities-framework.php:849
+#: c:\communities/communities-framework.php:3545
+#: c:\communities/communities-framework.php:3548
+msgid "Send Message to Owner"
+msgstr ""
+
+#: c:\communities/communities-framework.php:850
+#: c:\communities/communities-framework.php:1014
+#: c:\communities/communities-framework.php:1018
+msgid "Notifications"
+msgstr ""
+
+#: c:\communities/communities-framework.php:852
+#: c:\communities/communities-framework.php:854
+#: c:\communities/communities-framework.php:1148
+#: c:\communities/communities-framework.php:3541
+msgid "Leave"
+msgstr ""
+
+#: c:\communities/communities-framework.php:866
+msgid "You currently are not a member of a community. Please visit the \"Find Communities\" tab to search for communities to join. Alternatively you can create your own community using the form below!"
+msgstr ""
+
+#: c:\communities/communities-framework.php:873
+#: c:\communities/communities-framework.php:922
+#: c:\communities/communities-framework.php:2821
+msgid "Create Community"
+msgstr ""
+
+#: c:\communities/communities-framework.php:877
+#: c:\communities/communities-framework.php:926
+#: c:\communities/communities-framework.php:2825
+msgid "Sorry, you can only create a maximum of 45 communities."
+msgstr ""
+
+#: c:\communities/communities-framework.php:881
+#: c:\communities/communities-framework.php:2829
+msgid "You can create up to 45 communities of your own using the form below."
+msgstr ""
+
+#: c:\communities/communities-framework.php:888
+#: c:\communities/communities-framework.php:894
+#: c:\communities/communities-framework.php:941
+#: c:\communities/communities-framework.php:947
+#: c:\communities/communities-framework.php:972
+#: c:\communities/communities-framework.php:978
+#: c:\communities/communities-framework.php:1320
+#: c:\communities/communities-framework.php:1383
+#: c:\communities/communities-framework.php:2245
+#: c:\communities/communities-framework.php:2292
+#: c:\communities/communities-framework.php:2332
+#: c:\communities/communities-framework.php:2379
+#: c:\communities/communities-framework.php:2836
+#: c:\communities/communities-framework.php:2842
+#: c:\communities/communities-framework.php:2874
+#: c:\communities/communities-framework.php:2915
+#: c:\communities/communities-framework.php:3238
+#: c:\communities/communities-framework.php:3287
+#: c:\communities/communities-framework.php:3330
+#: c:\communities/communities-framework.php:3380
+msgid "Required"
+msgstr ""
+
+#: c:\communities/communities-framework.php:891
+#: c:\communities/communities-framework.php:944
+#: c:\communities/communities-framework.php:975
+#: c:\communities/communities-framework.php:2766
+#: c:\communities/communities-framework.php:2839
+#: c:\communities/communities-framework.php:2871
+#: c:\communities/communities-framework.php:2912
+#: c:\communities/communities-framework.php:3515
+msgid "Description"
+msgstr ""
+
+#: c:\communities/communities-framework.php:897
+#: c:\communities/communities-framework.php:950
+#: c:\communities/communities-framework.php:981
+#: c:\communities/communities-framework.php:2767
+#: c:\communities/communities-framework.php:2845
+#: c:\communities/communities-framework.php:2877
+#: c:\communities/communities-framework.php:2918
+msgid "Private"
+msgstr ""
+
+#: c:\communities/communities-framework.php:899
+#: c:\communities/communities-framework.php:952
+#: c:\communities/communities-framework.php:983
+#: c:\communities/communities-framework.php:1157
+#: c:\communities/communities-framework.php:1335
+#: c:\communities/communities-framework.php:1398
+#: c:\communities/communities-framework.php:1767
+#: c:\communities/communities-framework.php:1922
+#: c:\communities/communities-framework.php:2417
+#: c:\communities/communities-framework.php:2788
+#: c:\communities/communities-framework.php:2847
+#: c:\communities/communities-framework.php:2879
+#: c:\communities/communities-framework.php:2920
+#: c:\communities/communities-framework.php:2953
+#: c:\communities/communities-framework.php:3428
+#: c:\communities/communities-framework.php:3531
+msgid "No"
+msgstr ""
+
+#: c:\communities/communities-framework.php:900
+#: c:\communities/communities-framework.php:953
+#: c:\communities/communities-framework.php:984
+#: c:\communities/communities-framework.php:1158
+#: c:\communities/communities-framework.php:1336
+#: c:\communities/communities-framework.php:1399
+#: c:\communities/communities-framework.php:1768
+#: c:\communities/communities-framework.php:1923
+#: c:\communities/communities-framework.php:2418
+#: c:\communities/communities-framework.php:2786
+#: c:\communities/communities-framework.php:2848
+#: c:\communities/communities-framework.php:2880
+#: c:\communities/communities-framework.php:2921
+#: c:\communities/communities-framework.php:2954
+#: c:\communities/communities-framework.php:3429
+#: c:\communities/communities-framework.php:3533
+msgid "Yes"
+msgstr ""
+
+#: c:\communities/communities-framework.php:902
+#: c:\communities/communities-framework.php:955
+#: c:\communities/communities-framework.php:986
+#: c:\communities/communities-framework.php:2850
+#: c:\communities/communities-framework.php:2882
+#: c:\communities/communities-framework.php:2923
+msgid "Users have to enter a code to join private communities"
+msgstr ""
+
+#: c:\communities/communities-framework.php:906
+#: c:\communities/communities-framework.php:959
+#: c:\communities/communities-framework.php:991
+#: c:\communities/communities-framework.php:2854
+msgid "Create"
+msgstr ""
+
+#: c:\communities/communities-framework.php:934
+#: c:\communities/communities-framework.php:1376
+#: c:\communities/communities-framework.php:2285
+#: c:\communities/communities-framework.php:2372
+#: c:\communities/communities-framework.php:2907
+#: c:\communities/communities-framework.php:3280
+#: c:\communities/communities-framework.php:3373
+msgid "Please fill in all fields."
+msgstr ""
+
+#: c:\communities/communities-framework.php:965
+msgid "Sorry, a community with that name already exists."
+msgstr ""
+
+#: c:\communities/communities-framework.php:990
+#: c:\communities/communities-framework.php:1164
+#: c:\communities/communities-framework.php:1408
+#: c:\communities/communities-framework.php:1632
+#: c:\communities/communities-framework.php:1679
+#: c:\communities/communities-framework.php:1726
+#: c:\communities/communities-framework.php:1774
+#: c:\communities/communities-framework.php:1929
+#: c:\communities/communities-framework.php:1998
+#: c:\communities/communities-framework.php:2040
+#: c:\communities/communities-framework.php:2255
+#: c:\communities/communities-framework.php:2302
+#: c:\communities/communities-framework.php:2342
+#: c:\communities/communities-framework.php:2389
+#: c:\communities/communities-framework.php:2424
+#: c:\communities/communities-framework.php:2886
+#: c:\communities/communities-framework.php:2927
+#: c:\communities/communities-framework.php:2960
+#: c:\communities/communities-framework.php:3297
+#: c:\communities/communities-framework.php:3340
+#: c:\communities/communities-framework.php:3390
+#: c:\communities/communities-framework.php:3435
+#: c:\communities/communities-framework.php:3597
+#: c:\communities/communities-framework.php:3634
+msgid "Cancel"
+msgstr ""
+
+#: c:\communities/communities-framework.php:999
+msgid "Community created."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1020
+msgid "Instant"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1021
+msgid "Daily Digest"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1022
+msgid "None"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1028
+#: c:\communities/communities-framework.php:1680
+#: c:\communities/communities-framework.php:1727
+#: c:\communities/communities-framework.php:1999
+#: c:\communities/communities-framework.php:2041
+#: c:\communities/communities-framework.php:2343
+#: c:\communities/communities-framework.php:2390
+#: c:\communities/communities-framework.php:2887
+#: c:\communities/communities-framework.php:2928
+#: c:\communities/communities-framework.php:3341
+#: c:\communities/communities-framework.php:3391
+msgid "Save Changes"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1039
+#: c:\communities/communities-framework.php:1736
+#: c:\communities/communities-framework.php:1742
+#: c:\communities/communities-framework.php:2398
+#: c:\communities/communities-framework.php:2936
+#: c:\communities/communities-framework.php:3401
+#: c:\communities/communities-framework.php:3407
+msgid "Changes saved."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1103
+#: c:\communities/communities-framework.php:3056
+msgid "Avatar"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1104
+#: c:\communities/communities-framework.php:3057
+msgid "Type"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1118
+#: c:\communities/communities-framework.php:3072
+msgid "Member"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1120
+#: c:\communities/communities-framework.php:3074
+msgid "Moderator"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1127
+#: c:\communities/communities-framework.php:3078
+msgid "Visit Blog"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1129
+#: c:\communities/communities-framework.php:1131
+#: c:\communities/communities-framework.php:1442
+#: c:\communities/communities-framework.php:1544
+#: c:\communities/communities-framework.php:2566
+#: c:\communities/communities-framework.php:3079
+msgid "Send Message"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1155
+#: c:\communities/communities-framework.php:1765
+#: c:\communities/communities-framework.php:1920
+#: c:\communities/communities-framework.php:2415
+#: c:\communities/communities-framework.php:2951
+#: c:\communities/communities-framework.php:3426
+msgid "Are you sure?"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1165
+#: c:\communities/communities-framework.php:1775
+#: c:\communities/communities-framework.php:1930
+#: c:\communities/communities-framework.php:2425
+#: c:\communities/communities-framework.php:2961
+#: c:\communities/communities-framework.php:3436
+msgid "Continue"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1195
+#: c:\communities/communities-framework.php:1201
+msgid "Successfully left."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1214
+msgid "Topics"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1268
+msgid "Topic"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1269
+msgid "Posts"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1270
+#: c:\communities/communities-framework.php:1442
+msgid "Last Poster"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1285
+#: c:\communities/communities-framework.php:1434
+msgid "Closed"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1290
+#: c:\communities/communities-framework.php:1333
+#: c:\communities/communities-framework.php:1396
+msgid "Sticky"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1308
+msgid "There currently aren't any topics on this message board. Use the form below to create the first topic!"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1313
+#: c:\communities/communities-framework.php:1372
+msgid "New Topic"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1317
+#: c:\communities/communities-framework.php:1380
+#: c:\communities/communities-framework.php:1991
+#: c:\communities/communities-framework.php:2033
+#: c:\communities/communities-framework.php:2242
+#: c:\communities/communities-framework.php:2289
+#: c:\communities/communities-framework.php:2329
+#: c:\communities/communities-framework.php:2376
+#: c:\communities/communities-framework.php:2646
+#: c:\communities/communities-framework.php:3197
+#: c:\communities/communities-framework.php:3235
+#: c:\communities/communities-framework.php:3284
+#: c:\communities/communities-framework.php:3327
+#: c:\communities/communities-framework.php:3377
+msgid "Title"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1323
+#: c:\communities/communities-framework.php:1386
+#: c:\communities/communities-framework.php:1581
+#: c:\communities/communities-framework.php:1625
+#: c:\communities/communities-framework.php:1672
+#: c:\communities/communities-framework.php:1719
+#: c:\communities/communities-framework.php:2248
+#: c:\communities/communities-framework.php:2295
+#: c:\communities/communities-framework.php:2335
+#: c:\communities/communities-framework.php:2382
+#: c:\communities/communities-framework.php:3241
+#: c:\communities/communities-framework.php:3290
+#: c:\communities/communities-framework.php:3333
+#: c:\communities/communities-framework.php:3383
+msgid "Content"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1326
+#: c:\communities/communities-framework.php:1389
+#: c:\communities/communities-framework.php:1584
+#: c:\communities/communities-framework.php:1628
+#: c:\communities/communities-framework.php:2251
+#: c:\communities/communities-framework.php:2298
+#: c:\communities/communities-framework.php:2338
+#: c:\communities/communities-framework.php:2385
+#: c:\communities/communities-framework.php:3244
+#: c:\communities/communities-framework.php:3293
+#: c:\communities/communities-framework.php:3336
+#: c:\communities/communities-framework.php:3386
+msgid "Required - Some tags allowed: <code>a p ul li br strong img</code>"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1345
+#: c:\communities/communities-framework.php:1409
+#: c:\communities/communities-framework.php:1528
+#: c:\communities/communities-framework.php:1588
+#: c:\communities/communities-framework.php:1633
+msgid "Post"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1417
+msgid "Topic added."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1436
+msgid "Started"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1437
+msgid "Last Updated"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1442
+#: c:\communities/communities-framework.php:1547
+#: c:\communities/communities-framework.php:2566
+msgid "View Blog"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1450
+msgid "Open"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1454
+msgid "Close"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1459
+msgid "Unstick"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1463
+msgid "Make Sticky"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1467
+msgid "Edit Title"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1468
+#: c:\communities/communities-framework.php:1558
+#: c:\communities/communities-framework.php:2806
+#: c:\communities/communities-framework.php:2946
+#: c:\communities/communities-framework.php:3214
+msgid "Remove"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1527
+msgid "Author"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1553
+msgid "Posted"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1556
+#: c:\communities/communities-framework.php:1561
+#: c:\communities/communities-framework.php:2805
+#: c:\communities/communities-framework.php:3213
+msgid "Edit"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1577
+msgid "New Post"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1621
+msgid "Please provide some content."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1642
+#: c:\communities/communities-framework.php:1648
+msgid "Post added."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1668
+#: c:\communities/communities-framework.php:1714
+msgid "Edit Post"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1675
+#: c:\communities/communities-framework.php:1722
+msgid "Some tags allowed: <code>a p ul li br strong img</code>"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1715
+msgid "Please provide some content"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1760
+msgid "Remove Post"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1807
+msgid "Post removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1836
+#: c:\communities/communities-framework.php:1842
+msgid "Topic closed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1856
+#: c:\communities/communities-framework.php:1862
+msgid "Topic opened."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1876
+#: c:\communities/communities-framework.php:1882
+msgid "Topic made sticky."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1896
+#: c:\communities/communities-framework.php:1902
+msgid "Sticky removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1915
+msgid "Remove Topic"
+msgstr ""
+
+#: c:\communities/communities-framework.php:1959
+msgid "Topic Removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:1987
+#: c:\communities/communities-framework.php:2028
+msgid "Edit Topic"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2029
+msgid "Please provide a title."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2050
+#: c:\communities/communities-framework.php:2056
+msgid "Changes Saved."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2075
+#: c:\communities/communities-framework.php:2210
+msgid "Manage"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2078
+#: c:\communities/communities-framework.php:2216
+#: c:\communities/communities-framework.php:2238
+#: c:\communities/communities-framework.php:2284
+msgid "New Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2084
+msgid "Pages"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2161
+msgid "There currently aren't any pages."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2220
+#: c:\communities/communities-framework.php:2325
+#: c:\communities/communities-framework.php:2371
+msgid "Edit Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2221
+#: c:\communities/communities-framework.php:2411
+msgid "Remove Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2224
+msgid "Page"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2256
+#: c:\communities/communities-framework.php:2303
+#: c:\communities/communities-framework.php:3248
+#: c:\communities/communities-framework.php:3298
+msgid "Publish"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2311
+msgid "Page published."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2446
+msgid "Page removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2465
+msgid "Dashboard"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2474
+msgid "Recent Wiki Pages"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2474
+#: c:\communities/communities-framework.php:2497
+#: c:\communities/communities-framework.php:2531
+#: c:\communities/communities-framework.php:2555
+msgid "See All"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2489
+msgid "No pages to display."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2497
+msgid "Recent News"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2512
+msgid "No news to display."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2531
+msgid "Recent Message Board Topics"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2546
+msgid "No topics to display."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2555
+msgid "Recent Members"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2572
+msgid "No recent members."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2647
+#: c:\communities/communities-framework.php:3198
+msgid "Date/Time"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2670
+msgid "There currently aren't any news items. Please check back later."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2786
+#: c:\communities/communities-framework.php:3590
+#: c:\communities/communities-framework.php:3627
+msgid "Code"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2804
+#: c:\communities/communities-framework.php:3145
+msgid "Manage News"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2814
+msgid "Users must enter the code to join private communities."
+msgstr ""
+
+#: c:\communities/communities-framework.php:2866
+#: c:\communities/communities-framework.php:2903
+msgid "Edit Community"
+msgstr ""
+
+#: c:\communities/communities-framework.php:2982
+#: c:\communities/communities-framework.php:2988
+msgid "Community removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3081
+msgid "Remove Moderator Privelege"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3083
+msgid "Add Moderator Privelege"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3105
+#: c:\communities/communities-framework.php:3111
+msgid "Moderator privelege added."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3126
+#: c:\communities/communities-framework.php:3132
+msgid "Moderator privelege removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3225
+msgid "There currently aren't any news items for this community. Use the form below to add news!"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3231
+#: c:\communities/communities-framework.php:3276
+msgid "New News Item"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3307
+msgid "News item published."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3323
+#: c:\communities/communities-framework.php:3369
+msgid "Edit News Item"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3422
+msgid "Remove News Item"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3465
+msgid "News item removed."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3495
+msgid "Searches community names and descriptions"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3498
+msgid "Search"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3516
+msgid "Public"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3543
+#: c:\communities/communities-framework.php:3547
+#: c:\communities/communities-framework.php:3583
+#: c:\communities/communities-framework.php:3598
+#: c:\communities/communities-framework.php:3620
+#: c:\communities/communities-framework.php:3635
+msgid "Join"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3560
+msgid "Nothing found"
+msgstr ""
+
+#: c:\communities/communities-framework.php:3578
+#: c:\communities/communities-framework.php:3643
+msgid "Successfully joined."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3584
+msgid "This is a private community. Please supply the code below to join."
+msgstr ""
+
+#: c:\communities/communities-framework.php:3621
+msgid "Sorry, the code you provided is invalid."
+msgstr ""
+

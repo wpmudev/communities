@@ -5,6 +5,10 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.1.9 - 2012/12/12
+----------------------------------------------------------------------
+- Regenerate default language files (.mo, .po) per http://premium.wpmudev.org/forums/topic/language-support-1
+
 1.1.8 - 2012/10/28
 ----------------------------------------------------------------------
 - Fixed some PHP Notices/Warnings per http://premium.wpmudev.org/forums/topic/noticeafter-new-multisite-install
