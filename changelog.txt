@@ -1,9 +1,14 @@
 Plugin Name: Communities
-Author: Paul Menard (Incsub), Andrew Billits, Andrey Shipilov (Incsub)  
+Author: Paul Menard (Incsub)
 
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
+1.1.9.1 - 2013/1/7
+----------------------------------------------------------------------
+- Corrected role for menus.
+- Updated install.txt with instructions for upgrading from older versions of plugin
 
 1.1.9 - 2012/12/12
 ----------------------------------------------------------------------

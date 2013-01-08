@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9
+Version: 1.1.9.1
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -262,7 +262,7 @@ function communities_plug_pages() {
 	add_menu_page( 
 		__('Communities', $communities_text_domain), 
 		__('Communities', $communities_text_domain), 
-		'manage_options', 
+		'read', 
 		'communities', 
 		'communities_output'
 	);
@@ -273,7 +273,7 @@ function communities_plug_pages() {
 			'communities', 
 			__('Communities', $communities_text_domain), 
 			__('Manage Communities', $communities_text_domain), 
-			'manage_options', 
+			'read', 
 			'manage-communities', 
 			'communities_manage_output' 
 		);
@@ -283,7 +283,7 @@ function communities_plug_pages() {
 		'communities', 
 		__('Communities', $communities_text_domain), 
 		__('Find Communities', $communities_text_domain), 
-		'manage_options', 
+		'read', 
 		'find-communities', 
 		'communities_find_output' 
 	);
