@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.1
+Version: 1.1.9.2
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.9';
+$communities_current_version = '1.1.9.2';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -118,7 +118,7 @@ if ( (isset($_GET['action'])) && ($_GET['action'] == 'dashboard') ) {
 if ( (isset($_GET['action'])) && ($_GET['action'] == 'digest_notifications') ) {
 	communities_digest_notifications();
 }
-
+add_action('admin_init', 'communities_admin_init');
 add_action('admin_menu', 'communities_plug_pages');
 add_action('wpabar_menuitems', 'communities_admin_bar');
 add_action('communities_digest_notifications_cron', 'communities_digest_notifications');
@@ -254,6 +254,39 @@ function communities_global_install() {
 	}
 }
 
+function communities_admin_init() {
+	global $wp_roles;
+	
+	$role_names = $wp_roles->get_names();
+	foreach($role_names as $role_name => $role_label ) {
+		$role_object = get_role( $role_name );
+
+		//$role_object->remove_cap('communities_manage');
+		if (!isset($role_object->capabilities['communities_manage'])) {
+			if ((isset($role_object->capabilities['read'])) && ($role_object->capabilities['read'] == 1))
+				$role_object->add_cap('communities_manage', 1);
+			else
+				$role_object->add_cap('communities_manage', 0);
+		}		
+
+		//$role_object->remove_cap('communities_add');
+		if (!isset($role_object->capabilities['communities_add'])) {
+			if ((isset($role_object->capabilities['read'])) && ($role_object->capabilities['read'] == 1))
+				$role_object->add_cap('communities_add', 1);
+			else
+				$role_object->add_cap('communities_add', 0);
+		}		
+
+		//$role_object->remove_cap('communities_view');
+		if (!isset($role_object->capabilities['communities_view'])) {
+			if ((isset($role_object->capabilities['read'])) && ($role_object->capabilities['read'] == 1))
+				$role_object->add_cap('communities_view', 1);
+			else
+				$role_object->add_cap('communities_view', 0);
+		}		
+	}
+}
+
 function communities_plug_pages() {
 	global $wpdb, $user_ID, $communities_text_domain;
 	$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
@@ -262,18 +295,18 @@ function communities_plug_pages() {
 	add_menu_page( 
 		__('Communities', $communities_text_domain), 
 		__('Communities', $communities_text_domain), 
-		'read', 
+		'communities_view', 
 		'communities', 
 		'communities_output'
 	);
 
-	if ( $owner_community_count > 0 ) {
+	if ((is_super_admin()) || ( $owner_community_count > 0 )) {
 
 		add_submenu_page(
 			'communities', 
 			__('Communities', $communities_text_domain), 
 			__('Manage Communities', $communities_text_domain), 
-			'read', 
+			'communities_manage', 
 			'manage-communities', 
 			'communities_manage_output' 
 		);
@@ -281,9 +314,18 @@ function communities_plug_pages() {
 
 	add_submenu_page(
 		'communities', 
+		__('Add Community', $communities_text_domain), 
+		__('Add Community', $communities_text_domain), 
+		'communities_add', 
+		'add-communities', 
+		'communities_add_output' 
+	);
+
+	add_submenu_page(
+		'communities', 
 		__('Communities', $communities_text_domain), 
 		__('Find Communities', $communities_text_domain), 
-		'read', 
+		'communities_view', 
 		'find-communities', 
 		'communities_find_output' 
 	);
@@ -794,10 +836,23 @@ function communities_output() {
 	}
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
+	
+	if (!isset($_GET['start'])) $_GET['start'] = 0;
+	if (!isset($_GET['num'])) $_GET['num'] = 10;
+	if (!isset($_GET['order'])) $_GET['order'] = "ASC";
+	if (!isset($_GET['orderby'])) $_GET['orderby'] = "community_name";
+	
 	switch( $_GET[ 'action' ] ) {
 		//---------------------------------------------------//
 		case '':
 		default:
+			if ( is_super_admin() ) {
+				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities");
+			} else {
+				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
+			}
+			//echo "community_count=[". $community_count ."]<br />";
+		
 			?>
 			<h2><?php _e('Communities', $communities_text_domain) ?></h2>
 			<?php
@@ -813,41 +868,45 @@ function communities_output() {
 			}
 
 			$query = "SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '" . $user_ID . "'";
+//			if ( is_super_admin() ) {
+//				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities";
+//			} else {
+//				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'";
+//			}
+			
+//			$query .= " ORDER BY ". $_GET['orderby']." ". $_GET['order'];
 			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+			//echo "query=[". $query ."]<br />";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
-			if( count( $communities ) < $num ) {
-				$next = false;
-			} else {
-				$next = true;
-			}
 			if (count($communities) > 0){
-				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '" . $user_ID . "'");
-				if ($community_count > 30){
 					?>
                     <br />
                     <table><td>
 					<fieldset>
 					<?php
 
-					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+					$order_sort = "order=" . $_GET[ 'order' ] . "&orderby=" . $_GET[ 'orderby' ];
 
 					if( $start == 0 ) {
 						echo __('Previous Page', $communities_text_domain);
-					} elseif( $start <= 30 ) {
-						echo '<a href="?page=communities&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+					} else if( $start > 0 ) {
+						$start_prev = intval($start) - intval($num);
+						echo '<a href="?page=communities&start='. $start_prev .'&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					} else {
 						echo '<a href="?page=communities&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					}
-					if ( $next ) {
-						echo '&nbsp;||&nbsp;<a href="?page=communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
+					
+					if( $community_count > ($start + $num) ) {
+						echo '&nbsp;|&nbsp;<a href="?page=communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
 					} else {
-						echo '&nbsp;||&nbsp;' . __('Next Page', $communities_text_domain);
+						echo '&nbsp;|&nbsp;' . __('Next Page', $communities_text_domain);
 					}
+
 					?>
 					</fieldset>
 					</td></table>
 					<?php
-				}
+//				}
 				?>
 				<br />
 				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
@@ -902,14 +961,15 @@ function communities_output() {
 				<?php
 			} else {
 				?>
-	            <p><?php _e('You currently are not a member of a community. Please visit the "Find Communities" tab to search for communities to join. Alternatively you can create your own community using the form below!', $communities_text_domain) ?></p>
+	            <p><?php _e('You currently are not a member of a community. Please visit the <a href="?page=find-communities">Find Communities</a> menu to search for communities to join.', $communities_text_domain) ?></p>
                 <?php
 			}
 
+/*
 			$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
 			?>
             <br />
-			<h2><?php _e('Create Community', $communities_text_domain) ?></h2>
+			<h2><?php _e('XXX Create Community', $communities_text_domain) ?></h2>
 			<?php
 			if ( $owner_community_count > 44 ) {
 				?>
@@ -948,6 +1008,7 @@ function communities_output() {
 				</form>
 				<?php
 			}
+*/			
 		break;
 		//---------------------------------------------------//
 		case "create_community":
@@ -959,9 +1020,9 @@ function communities_output() {
 				";
 			} else {
 				?>
-				<h2><?php _e('Create Community', $communities_text_domain) ?></h2>
+				<h2><?php _e('YYY Create Community', $communities_text_domain) ?></h2>
 				<?php
-				if ( $owner_community_count > 44 ) {
+				if (( isset($owner_community_count) ) && ( $owner_community_count > 44 )) {
 					?>
 					<p><?php _e('Sorry, you can only create a maximum of 45 communities.', $communities_text_domain) ?></p>
 					<?php
@@ -2770,6 +2831,96 @@ function communities_output() {
 	echo '</div>';
 }
 
+function communities_add_output() {
+	global $wpdb, $user_ID, $communities_text_domain;
+
+	?><div class="wrap"><?php
+
+	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
+	
+	switch($_GET['action']) {
+		case 'create_community':
+
+			?>
+			<h2><?php _e('Create Community', $communities_text_domain) ?></h2>
+			<p><?php _e('Please fill in all fields.', $communities_text_domain) ?></p>
+			<?php
+			
+			$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
+			if (( isset($owner_community_count) ) && ( $owner_community_count > 44 )) {
+				?><p><?php _e('Sorry, you can only create a maximum of 45 communities.', $communities_text_domain) ?></p><?php
+			} else {
+				//echo "_POST<pre>"; print_r($_POST); echo "</pre>";
+				if ( !empty( $_POST['community_name'] ) || !empty( $_POST['community_description'] ) ) {
+					$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_name = '" . 
+						addslashes( $_POST['community_name'] ) . "'");
+					if ($community_count > 0) {
+						?><div id="message" class="error fade"><p><?php _e('Sorry, a community with that name already exists.', $communities_text_domain) ?></p></div><?php
+					} else {
+						communities_create_community($user_ID, $_POST['community_name'], $_POST['community_description'], $_POST['community_private']);
+						?><div id="message" class="updated fade"><p><?php _e('Community created.', $communities_text_domain) ?></p></div><?php
+						$_POST['community_name'] 			= '';
+						$_POST['community_description'] 	= '';
+						$_POST['community_private'] 		= '';
+					}
+				} else {
+					?><div id="message" class="error fade"><p><?php _e('Community Name and Description are required.', $communities_text_domain) ?></p></div><?php
+				}
+			} 
+
+			break;
+		
+		case 'edit_community':
+			?>
+			<h2><?php _e('Edit Community', $communities_text_domain) ?></h2>
+			<p><?php _e('Please fill in all fields.', $communities_text_domain) ?></p>
+			<?php
+			break;
+			
+		default:
+			?>
+			<h2><?php _e('Create Community', $communities_text_domain) ?></h2>
+			<p><?php _e('Please fill in all fields.', $communities_text_domain) ?></p>
+			<?php
+		
+			$_POST['community_name'] 			= '';
+			$_POST['community_description'] 	= '';
+			$_POST['community_private'] 		= '';
+			break;
+	}
+	?>
+		<form name="create_community" method="POST" action="?page=add-communities&action=create_community">
+			<table class="form-table">
+			<tr valign="top">
+				<th scope="row"><?php _e('Name', $communities_text_domain) ?></th>
+				<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo $_POST['community_name']; ?>" />
+				<br />
+				<?php _e('Required', $communities_text_domain) ?></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?php _e('Description', $communities_text_domain) ?></th>
+				<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" 
+					value="<?php echo $_POST['community_description']; ?>" />
+				<br />
+				<?php _e('Required', $communities_text_domain) ?></td>
+			</tr>
+			<tr valign="top">
+				<th scope="row"><?php _e('Private', $communities_text_domain) ?></th>
+				<td><select name="community_private">
+					<option value="0" <?php if ($_POST['community_private'] == '0' || $_POST['community_private'] == '') echo 'community_private"'; ?>><?php _e('No', $communities_text_domain); ?></option>
+					<option value="1" <?php if ($_POST['community_private'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes', $communities_text_domain); ?></option>
+				</select>
+				<?php _e('Users have to enter a code to join private communities', $communities_text_domain) ?></td>
+			</tr>
+			</table>
+			<p class="submit">
+			<input type="submit" name="Submit" value="<?php _e('Create', $communities_text_domain) ?>" />
+			</p>
+		</form>
+	</div>
+	<?php
+}
+
 function communities_manage_output() {
 	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $communities_text_domain;
 	
@@ -2779,6 +2930,8 @@ function communities_manage_output() {
 	
 	if (!isset($_GET['start'])) $_GET['start'] = 0;
 	if (!isset($_GET['num'])) $_GET['num'] = 10;
+	if (!isset($_GET['order'])) $_GET['order'] = "ASC";
+	if (!isset($_GET['orderby'])) $_GET['orderby'] = "community_name";
 	
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
@@ -2786,6 +2939,12 @@ function communities_manage_output() {
 		//---------------------------------------------------//
 		case '':
 		default:
+			if ( is_super_admin() ) {
+				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities");
+			} else {
+				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
+			}
+			//echo "community_count=[". $community_count ."]<br />";
 			?>
 			<h2><?php _e('Communities', $communities_text_domain) ?></h2>
 			<?php
@@ -2804,41 +2963,44 @@ function communities_manage_output() {
 			} else {
 				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'";
 			}
-			$query .= " ORDER BY community_name ASC";
+			$query .= " ORDER BY ". $_GET['orderby']." ". $_GET['order'];
 			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+			//echo "query<pre>"; print_r($query); echo "</pre>";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
 			if( count( $communities ) < $num ) {
 				$next = false;
 			} else {
 				$next = true;
 			}
-			if (count($communities) > 0){
-				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
-				if ($community_count > 30){
+			if (count($communities) > 0) {
+				//$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
+				//echo "community_count=[". $community_count ."] num=[". $num ."] start=[". $start ."]<br />";
+				//if ($community_count > ($_GET['num']+$_GET['start'])){
 					?>
 					<table><td>
 					<fieldset>
 					<?php
 
-					//$order_sort = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+					$order_sort = "order=" . $_GET[ 'order' ] . "&orderby=" . $_GET[ 'orderby' ];
 
 					if( $start == 0 ) {
 						echo __('Previous Page', $communities_text_domain);
-					} elseif( $start <= 30 ) {
-						echo '<a href="?page=manage-communities&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+					} else if( $start > 0 ) {
+						$start_prev = intval($start) - intval($num);
+						echo '<a href="?page=manage-communities&start='. $start_prev .'&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					} else {
 						echo '<a href="?page=manage-communities&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					}
 					if ( $next ) {
-						echo '&nbsp;||&nbsp;<a href="?page=manage-communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
+						echo '&nbsp;|&nbsp;<a href="?page=manage-communities&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
 					} else {
-						echo '&nbsp;||&nbsp;' . __('Next Page', $communities_text_domain);
+						echo '&nbsp;|&nbsp;' . __('Next Page', $communities_text_domain);
 					}
 					?>
 					</fieldset>
 					</td></table>
 					<?php
-				}
+				//}
 				echo "
 				<br />
 				<table cellpadding='3' cellspacing='3' width='100%' class='widefat'>
@@ -2900,7 +3062,8 @@ function communities_manage_output() {
 			$owner_community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'");
 			?>
             <br />
-			<h2><?php _e('Create Community', $communities_text_domain) ?></h2>
+<?php /* ?>
+			<h2><?php _e('ZZZ Create Community', $communities_text_domain) ?></h2>
 			<?php
 			if ( $owner_community_count > 44 ) {
 				?>
@@ -2939,6 +3102,7 @@ function communities_manage_output() {
 				</form>
 				<?php
 			}
+*/ 
 		break;
 		//---------------------------------------------------//
 		case "edit_community":
@@ -2981,7 +3145,9 @@ function communities_manage_output() {
 				</script>
 				";
 			} else {
-				$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_GET['cid'] . "'");
+				//echo "_REQUEST<pre>"; print_r($_REQUEST); echo "</pre>";
+				$community_name = $wpdb->get_var("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '" . $_REQUEST['cid'] . "'");
+				//die();
 				?>
 				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit Community', $communities_text_domain) ?></h2>
 				<?php

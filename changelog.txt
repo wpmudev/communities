@@ -4,6 +4,11 @@ Author: Paul Menard (Incsub)
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+1.1.9.2 - 2013/3/13
+----------------------------------------------------------------------
+- Correct bug in logic for paging Communities listing.
+- Moved the Add Community form to its own menu panel.
+- Added 3 on by default role capabilities: communities_manage, communities_add, communities_view which can be assigned/remove to restrict access. 
 
 1.1.9.1 - 2013/1/7
 ----------------------------------------------------------------------
