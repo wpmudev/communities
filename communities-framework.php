@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.2
+Version: 1.1.9.3
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -40,8 +40,11 @@ include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.p
 //---Hook-----------------------------------------------------------------//
 //------------------------------------------------------------------------//
 
-load_muplugin_textdomain( $communities_text_domain, '/communities-languages/' );
-
+if (preg_match('/mu\-plugin/', PLUGINDIR) > 0) {
+    load_muplugin_textdomain($communities_text_domain, dirname(plugin_basename(__FILE__)).'/communities-languages/');
+} else {
+	load_plugin_textdomain( $communities_text_domain, false, dirname( plugin_basename( __FILE__ ) ) . '/communities-languages/' );
+}
 
 $communities_notifications_digest_subject = __("COMMUNITY_NAME newsletter", $communities_text_domain);
 $communities_notifications_digest_content = change_email_body_to_html( __(
