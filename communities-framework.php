@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.4
+Version: 1.1.9.5
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.9.4';
+$communities_current_version = '1.1.9.5';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -35,8 +35,15 @@ $communities_text_domain = 'communities'; // 'digest', 'instant', OR 'none'
 
 include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
 
-define('COMMUNITIES_ALLOWED_CONTENT_TAGS', '<a><p><ul><li><br><strong><img>');
-define('COMMUNITIES_ALLOWED_TITLE_TAGS', null);
+$COMMUNITIES_ALLOWED_CONTENT_TAGS = array(
+	'a' 		=> 	array('href' => array(),'title' => array()),
+  	'p'			=>	array(),
+	'ul'		=>	array(),
+	'li'		=>	array(),
+	'br'		=>	array(),
+	'strong'	=>	array(),
+	'img'		=>	array()
+);
 
 //------------------------------------------------------------------------//
 //---Hook-----------------------------------------------------------------//
@@ -116,11 +123,11 @@ if ((!isset($_GET['key'])) || (empty($_GET['key'])))  {
 	add_action('admin_head', 'communities_make_current');
 }
 
-if ( (isset($_GET['action'])) && ($_GET['action'] == 'dashboard') ) {
+if ( (isset($_GET['action'])) && (sanitize_text_field($_GET['action']) == 'dashboard') ) {
 	add_action('admin_head','communities_dashboard_css');
 }
 
-if ( (isset($_GET['action'])) && ($_GET['action'] == 'digest_notifications') ) {
+if ( (isset($_GET['action'])) && (sanitize_text_field($_GET['action']) == 'digest_notifications') ) {
 	communities_digest_notifications();
 }
 add_action('admin_init', 'communities_admin_init');
@@ -348,10 +355,10 @@ function communities_create_community($user_ID, $name, $description, $private = 
 //	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities (community_owner_user_ID,community_name,community_description,community_private) VALUES ( '" . $user_ID . "','" . addslashes( $name ) . "','" . addslashes( $description ) . "','" . $private . "' )" );
 
 	$wpdb->insert($wpdb->base_prefix . "communities", array(
-		'community_owner_user_ID' 	=> 	filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT), 
-		'community_name'	 		=>	filter_var($name, FILTER_SANITIZE_STRING),
-		'community_description'		=>	filter_var($description, FILTER_SANITIZE_STRING),
-		'community_private'			=>	filter_var($private, FILTER_SANITIZE_NUMBER_INT)
+		'community_owner_user_ID' 	=> 	intval($user_ID), 
+		'community_name'	 		=>	sanitize_text_field($name),
+		'community_description'		=>	sanitize_text_field($description),
+		'community_private'			=>	intval($private)
 		), array('%d', '%s', '%s', '%d')
 	);
 
@@ -366,10 +373,10 @@ function communities_create_community($user_ID, $name, $description, $private = 
 function communities_update_community($user_ID, $community_ID, $description, $private = '0') {
 	global $wpdb;
 	
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$description 	= filter_var($description, FILTER_SANITIZE_STRING);
-	$private 		= filter_var($private, FILTER_SANITIZE_NUMBER_INT);
+	$user_ID 		= intval($user_ID);
+	$community_ID 	= intval($community_ID);
+	$description 	= sanitize_text_field($description);
+	$private 		= intval($private);
 	
 	if ( is_super_admin() ) {
 		//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities SET community_description = '" . $description . "' WHERE community_ID = '" . $community_ID . "'");
@@ -402,8 +409,6 @@ function communities_update_community($user_ID, $community_ID, $description, $pr
 function communities_remove_community($community_ID) {
 	global $wpdb;
 	
-//	$community_ID = filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	
 	do_action('remove_community', $community_ID);
 
 	$wpdb->query( $wpdb->prepare("DELETE FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d'", $community_ID ));
@@ -419,14 +424,14 @@ function communities_remove_community($community_ID) {
 function communities_join_community($user_ID, $community_ID, $moderator = '0') {
 	global $wpdb, $communities_notifications_default;
 
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$moderator		= filter_var($moderator, FILTER_SANITIZE_NUMBER_INT);
+	$user_ID 		= intval($user_ID);
+	$community_ID 	= intval($community_ID);
+	$moderator		= intval($moderator);
 	
 	if ( empty( $communities_notifications_default ) )
 		$communities_notifications_default = 'digest';
 	else
-		$communities_notifications_default = filter_var($communities_notifications_default, FILTER_SANITIZE_STRING);
+		$communities_notifications_default = sanitize_text_field($communities_notifications_default);
 		
 //	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_members (community_ID,member_moderator,member_notifications,member_user_ID) VALUES ( '" . $community_ID . "', '" . $moderator . "', '" . $communities_notifications_default . "', '" . $user_ID . "' )" );
 	
@@ -442,8 +447,8 @@ function communities_join_community($user_ID, $community_ID, $moderator = '0') {
 function communities_leave_community($user_ID, $community_ID) {
 	global $wpdb;
 	
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
+	$user_ID 		= intval($user_ID);
+	$community_ID 	= intval($community_ID);
 	
 	$wpdb->query( $wpdb->prepare( "DELETE FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $community_ID, $user_ID ));
 	$wpdb->query( $wpdb->prepare( "DELETE FROM " . $wpdb->base_prefix . "communities_notifications WHERE notification_community_ID = '%d' AND notification_user_ID = '%d'", $community_ID, $user_ID ));
@@ -452,8 +457,8 @@ function communities_leave_community($user_ID, $community_ID) {
 function communities_add_moderator_privilege($user_ID, $community_ID) {
 	global $wpdb;
 	
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
+	$community_ID 	= intval($community_ID);
+	$user_ID 		= intval($user_ID);
 	
 	//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_members SET member_moderator = '1' WHERE community_ID = '" . $community_ID . "' AND member_user_ID = '" . $user_ID . "'");
 	$wpdb->update($wpdb->base_prefix . "communities_members", 
@@ -475,8 +480,8 @@ function communities_remove_moderator_privilege($user_ID, $community_ID) {
 			'member_moderator'		=>	'0'
 		),
 		array(
-			'community_ID' 			=> 	filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT),
-			'member_user_ID'		=>	filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT)
+			'community_ID' 			=> 	intval($community_ID),
+			'member_user_ID'		=>	intval($user_ID)
 		), array('%d'), array('%d', '%d')
 	);
 }
@@ -491,8 +496,8 @@ function communities_update_notifications($user_ID, $community_ID, $notification
 			'member_notifications'		=>	$notifications
 		),
 		array(
-			'community_ID' 				=> 	filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT),
-			'member_user_ID'			=>	filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT)
+			'community_ID' 				=> 	intval($community_ID),
+			'member_user_ID'			=>	intval($user_ID)
 		), array('%s'), array('%d', '%d')
 	);
 
@@ -506,22 +511,22 @@ function communities_count_posts($topic_ID) {
 	//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_posts = '" . $post_count . "' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
 		array(
-			'topic_posts'		=>	filter_var($post_count, FILTER_SANITIZE_NUMBER_INT)
+			'topic_posts'		=>	intval($post_count)
 		),
 		array(
-			'topic_ID' 			=> 	filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT)
+			'topic_ID' 			=> 	intval($topic_ID)
 		), array('%d'), array('%d')
 	);
 }
 
 function communities_add_topic($community_ID, $user_ID, $title, $content, $sticky = '0') {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
-	$content 		= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
-	$sticky			= filter_var($sticky, FILTER_SANITIZE_NUMBER_INT);
+	$community_ID 	= intval($community_ID);
+	$user_ID 		= intval($user_ID);
+	$title 			= sanitize_text_field($title);
+	$content 		= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$sticky			= intval($sticky);
 	$time = time();
 
 	//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_topics (topic_community_ID, topic_title, topic_author, topic_last_author, topic_stamp, topic_last_updated_stamp, topic_sticky) VALUES ( '" . $community_ID . "', '" . addslashes( $title ) . "', '" . $user_ID . "', '" . $user_ID . "', '" . $time . "', '" . $time . "', '" . $sticky . "')" );
@@ -562,12 +567,12 @@ function communities_add_topic($community_ID, $user_ID, $title, $content, $stick
 }
 
 function communities_add_post($community_ID, $topic_ID, $user_ID, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$topic_ID 		= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
-	$user_ID 		= filter_var($user_ID, FILTER_SANITIZE_NUMBER_INT);
-	$content 		= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$community_ID 	= intval($community_ID);
+	$topic_ID 		= intval($topic_ID);
+	$user_ID 		= intval($user_ID);
+	$content 		= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 
 	$time = time();
 //	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_posts (post_community_ID, post_topic_ID, post_author, post_content, post_stamp) VALUES ( '" . $community_ID . "', '" . $topic_ID . "', '" . $user_ID . "', '" . addslashes( $content ) . "', '" . $time . "')" );
@@ -596,10 +601,10 @@ function communities_add_post($community_ID, $topic_ID, $user_ID, $content) {
 }
 
 function communities_update_post_content($post_ID, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$post_ID 	= filter_var($post_ID, FILTER_SANITIZE_NUMBER_INT);
-	$content 	= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$post_ID 	= intval($post_ID);
+	$content 	= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_posts SET post_content = '" . addslashes( $content ) . "' WHERE post_ID = '" . $post_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_posts", 
@@ -615,8 +620,8 @@ function communities_update_post_content($post_ID, $content) {
 function communities_update_topic_title($topic_ID, $title) {
 	global $wpdb;
 
-	$topic_ID 	= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 		= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
+	$topic_ID 	= intval($topic_ID);
+	$title 		= sanitize_text_field($title);
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_title = '" . addslashes( $title ) . "' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
@@ -632,7 +637,7 @@ function communities_update_topic_title($topic_ID, $title) {
 function communities_close_topic($topic_ID) {
 	global $wpdb;
 
-	$topic_ID 	= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
+	$topic_ID 	= intval($topic_ID);
 	
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_closed = '1' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
@@ -648,7 +653,7 @@ function communities_close_topic($topic_ID) {
 function communities_open_topic($topic_ID) {
 	global $wpdb;
 	
-	$topic_ID 	= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
+	$topic_ID 	= intval($topic_ID);
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_closed = '0' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
@@ -664,7 +669,7 @@ function communities_open_topic($topic_ID) {
 function communities_stick_topic($topic_ID) {
 	global $wpdb;
 
-	$topic_ID 	= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
+	$topic_ID 	= intval($topic_ID);
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_sticky = '1' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
@@ -680,7 +685,7 @@ function communities_stick_topic($topic_ID) {
 function communities_unstick_topic($topic_ID) {
 	global $wpdb;
 
-	$topic_ID 	= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
+	$topic_ID 	= intval($topic_ID);
 
 	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_topics SET topic_sticky = '0' WHERE topic_ID = '" . $topic_ID . "'" );
 	$wpdb->update($wpdb->base_prefix . "communities_topics", 
@@ -710,12 +715,12 @@ function communities_delete_post($topic_ID, $post_ID) {
 }
 
 function communities_add_page($community_ID, $parent_page_ID, $title, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$parent_page_ID = filter_var($parent_page_ID, FILTER_SANITIZE_NUMBER_INT);
-	$content 		= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
+	$community_ID 	= intval($community_ID);
+	$parent_page_ID = intval($parent_page_ID);
+	$title 			= sanitize_text_field($title);
+	$content 		= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 	$time 			= time();
 	
 //	$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_pages (page_community_ID, page_parent_page_ID, page_title, page_content, page_stamp) VALUES ( '" . $community_ID . "', '" . $parent_page_ID . "', '" . addslashes( $title ) . "', '" . addslashes( $content ) . "', '" . $time . "')" );
@@ -740,10 +745,10 @@ function communities_add_page($community_ID, $parent_page_ID, $title, $content) 
 }
 
 function communities_update_page($page_ID, $title, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$title 		= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
-	$content 	= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$title 		= sanitize_text_field($title);
+	$content 	= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 
 	//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_pages SET page_title = '" . addslashes( $title ) . "' WHERE page_ID = '" . $page_ID . "'" );
 	//$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_pages SET page_content = '" . addslashes( $content ) . "' WHERE page_ID = '" . $page_ID . "'" );
@@ -766,11 +771,11 @@ function communities_delete_page($page_ID) {
 }
 
 function communities_add_news_item($community_ID, $title, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
-	$content 		= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$community_ID 	= intval($community_ID);
+	$title 			= sanitize_text_field($title);
+	$content 		= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 	$time 			= time();
 
 	//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_news_items (news_item_community_ID, news_item_title, news_item_content, news_item_stamp) VALUES ( '" . $community_ID . "', '" . addslashes( $title ) . "', '" . addslashes( $content ) . "', '" . $time . "')" );
@@ -794,11 +799,11 @@ function communities_add_news_item($community_ID, $title, $content) {
 }
 
 function communities_update_news_item($news_item_ID, $title, $content) {
-	global $wpdb;
+	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$news_item_ID	= filter_var($news_item_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
-	$content 		= strip_tags($content, COMMUNITIES_ALLOWED_CONTENT_TAGS);
+	$news_item_ID	= intval($news_item_ID);
+	$title 			= sanitize_text_field($title);
+	$content 		= wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS);
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_news_items SET news_item_title = '" . addslashes( $title ) . "' WHERE news_item_ID = '" . $news_item_ID . "'" );
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_news_items SET news_item_content = '" . addslashes( $content ) . "' WHERE news_item_ID = '" . $news_item_ID . "'" );
@@ -823,9 +828,9 @@ function communities_delete_news_item($news_item_ID) {
 function communities_topic_notification($community_ID, $topic_ID, $title) {
 	global $wpdb, $communities_notifications_instant_topic_subject, $communities_notifications_instant_topic_content, $current_site;
 
-	$community_ID	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$topic_ID		= filter_var($topic_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
+	$community_ID	= intval($community_ID);
+	$topic_ID		= intval($topic_ID);
+	$title 			= sanitize_text_field($title);
 
 
 	$email_subject = $communities_notifications_instant_topic_subject;
@@ -892,9 +897,9 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 	global $wpdb, $communities_notifications_instant_page_subject, $communities_notifications_instant_page_content, $current_site, $current_site;
 
 
-	$community_ID	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$page_ID		= filter_var($page_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
+	$community_ID	= intval($community_ID);
+	$page_ID		= intval($page_ID);
+	$title 			= sanitize_text_field($title);
 	
 	$email_subject = $communities_notifications_instant_page_subject;
 	$email_content = $communities_notifications_instant_page_content;
@@ -957,9 +962,9 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 function communities_news_notification($community_ID, $news_item_ID, $title) {
 	global $wpdb, $communities_notifications_instant_news_subject, $communities_notifications_instant_news_content, $current_site;
 
-	$community_ID	= filter_var($community_ID, FILTER_SANITIZE_NUMBER_INT);
-	$news_item_ID	= filter_var($news_item_ID, FILTER_SANITIZE_NUMBER_INT);
-	$title 			= strip_tags($title, COMMUNITIES_ALLOWED_TITLE_TAGS);
+	$community_ID	= intval($community_ID);
+	$news_item_ID	= intval($news_item_ID);
+	$title 			= sanitize_text_field($title);
 
 	$email_subject = $communities_notifications_instant_news_subject;
 	$email_content = $communities_notifications_instant_news_content;
@@ -1140,13 +1145,14 @@ function communities_dashboard_css() {
 //------------------------------------------------------------------------//
 
 function communities_output() {
-	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $communities_text_domain;
+	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $communities_text_domain, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
 	if ((isset($_GET['updated'])) && (isset($_GET['updatedmsg']))) {
-		?><div id="message" class="updated fade"><p><?php echo ( urldecode( $_GET['updatedmsg'] ) ) ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php echo ( sanitize_text_field( $_GET['updatedmsg'] ) ) ?></p></div><?php
 	}
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
+	else $_GET[ 'action' ] = sanitize_text_field($_GET[ 'action' ]);
 	
 	if (!isset($_GET['start'])) $_GET['start'] = 0;
 	else $_GET['start'] = intval($_GET['start']);
@@ -1159,7 +1165,7 @@ function communities_output() {
 	
 	if (!isset($_GET['orderby'])) $_GET['orderby'] = "community_name";
 	
-	switch( $_GET[ 'action' ] ) {
+	switch( sanitize_text_field($_GET[ 'action' ]) ) {
 		//---------------------------------------------------//
 		case '':
 		default:
@@ -1184,15 +1190,12 @@ function communities_output() {
 				$num = intval( $_GET[ 'num' ] );
 			}
 
-			$query = $wpdb->prepare("SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '%d'", $user_ID);
-//			if ( is_super_admin() ) {
-//				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities";
-//			} else {
-//				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '" . $user_ID . "'";
-//			}
-			
-//			$query .= " ORDER BY ". $_GET['orderby']." ". $_GET['order'];
-			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+//			$query = $wpdb->prepare("SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '%d'", $user_ID);
+			if ( is_super_admin() ) {
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY %s %s LIMIT %d,%d", $_GET['orderby'], $_GET['order'], $start,  $num);
+			} else {
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '%d' ORDER BY %s %s LIMIT %d,%d", $user_ID, $_GET['orderby'], $_GET['order'], $start,  $num);
+			}
 			//echo "query=[". $query ."]<br />";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
 			if (count($communities) > 0){
@@ -1202,7 +1205,7 @@ function communities_output() {
 					<fieldset>
 					<?php
 
-					$order_sort = "order=" . $_GET[ 'order' ] . "&orderby=" . $_GET[ 'orderby' ];
+					$order_sort = "order=" . sanitize_text_field($_GET[ 'order' ]) . "&orderby=" . sanitize_text_field($_GET[ 'orderby' ]);
 
 					if( $start == 0 ) {
 						echo __('Previous Page', $communities_text_domain);
@@ -1387,8 +1390,8 @@ function communities_output() {
 				$community_owner_user_ID = $wpdb->get_var($wpdb->prepare("SELECT community_owner_user_ID FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				$member_notifications = $wpdb->get_var($wpdb->prepare("SELECT member_notifications FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=notifications&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Notifications', $communities_text_domain) ?></a></h2>
-                <form name="notifications" method="POST" action="?page=communities&action=notifications_process&cid=<?php echo $_GET['cid']; ?>">
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=notifications&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Notifications', $communities_text_domain) ?></a></h2>
+                <form name="notifications" method="POST" action="?page=communities&action=notifications_process&cid=<?php echo intval($_GET['cid']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Notifications', $communities_text_domain) ?></th>
@@ -1409,10 +1412,10 @@ function communities_output() {
 		break;
 		//---------------------------------------------------//
 		case "notifications_process":
-			communities_update_notifications($user_ID, $_GET['cid'], $_POST['notifications']);
+			communities_update_notifications($user_ID, intval($_GET['cid']), sanitize_text_field($_POST['notifications']));
 			echo "
 			<script type='text/javascript'>
-			window.location='?page=communities&action=notifications&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+			window.location='?page=communities&action=notifications&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 			</script>
 			";
 		break;
@@ -1423,7 +1426,7 @@ function communities_output() {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				$community_owner_user_ID = $wpdb->get_var($wpdb->prepare("SELECT community_owner_user_ID FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=member_list&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Members', $communities_text_domain) ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=member_list&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Members', $communities_text_domain) ?></a></h2>
 				<?php
 				if( isset( $_GET[ 'start' ] ) == false ) {
 					$start = 0;
@@ -1457,12 +1460,12 @@ function communities_output() {
 						if( $start == 0 ) {
 							echo __('Previous Page', $communities_text_domain);
 						} elseif( $start <= 30 ) {
-							echo '<a href="?page=communities&action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+							echo '<a href="?page=communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 						} else {
-							echo '<a href="?page=communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+							echo '<a href="?page=communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 						}
 						if ( $next ) {
-							echo '&nbsp;||&nbsp;<a href="?page=communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
+							echo '&nbsp;||&nbsp;<a href="?page=communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
 						} else {
 							echo '&nbsp;||&nbsp;' . __('Next Page', $communities_text_domain);
 						}
@@ -1537,11 +1540,11 @@ function communities_output() {
 		case "leave_community":
 			$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Leave', $communities_text_domain) ?></h2>
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Leave', $communities_text_domain) ?></h2>
             <form name="leave_community" method="POST" action="?page=communities&action=leave_community_process">
-                <input type="hidden" name="cid" value="<?php echo $_GET['cid']; ?>" />
-                <input type="hidden" name="search_terms" value="<?php echo $_GET['search_terms']; ?>" />
-                <input type="hidden" name="return" value="<?php echo $_GET['return']; ?>" />
+                <input type="hidden" name="cid" value="<?php echo intval($_GET['cid']); ?>" />
+                <input type="hidden" name="search_terms" value="<?php echo sanitize_text_field($_GET['search_terms']); ?>" />
+                <input type="hidden" name="return" value="<?php echo sanitize_text_field($_GET['return']); ?>" />
                 <table class="form-table">
                 <tr valign="top">
                 <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -1565,7 +1568,7 @@ function communities_output() {
 				if ( $_POST['return'] == 'find_communities' ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=find-communities&search_terms=" . $_POST['search_terms'] . "';
+					window.location='?page=find-communities&search_terms=" . sanitize_text_field($_POST['search_terms']) . "';
 					</script>
 					";
 				} else {
@@ -1580,11 +1583,11 @@ function communities_output() {
 				if ( $community_owner_user_ID == $user_ID ) {
 					die();
 				}
-				communities_leave_community($user_ID, $_POST['cid']);
+				communities_leave_community($user_ID, intval($_POST['cid']));
 				if ( $_POST['return'] == 'find_communities' ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=find-communities&search_terms=" . $_POST['search_terms'] . "&updated=true&updatedmsg=" . urlencode(__('Successfully left.', $communities_text_domain)) . "';
+					window.location='?page=find-communities&search_terms=" . sanitize_text_field($_POST['search_terms']) . "&updated=true&updatedmsg=" . urlencode(__('Successfully left.', $communities_text_domain)) . "';
 					</script>
 					";
 				} else {
@@ -1602,7 +1605,7 @@ function communities_output() {
 			if ( $member_count > 0 || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a></h2>
 				<h3><?php _e('Topics', $communities_text_domain) ?></h3>
 				<?php
 				if( isset( $_GET[ 'start' ] ) == false ) {
@@ -1639,12 +1642,12 @@ function communities_output() {
 						if( $start == 0 ) {
 							echo __('Previous Page', $communities_text_domain);
 						} elseif( $start <= 30 ) {
-							echo '<a href="?page=communities&action=message_board&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+							echo '<a href="?page=communities&action=message_board&cid=' . intval($_GET['cid']) . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 						} else {
-							echo '<a href="?page=communities&action=message_board&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+							echo '<a href="?page=communities&action=message_board&cid=' . intval($_GET['cid']) . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 						}
 						if ( $next ) {
-							echo '&nbsp;||&nbsp;<a href="?page=communities&action=message_board&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
+							echo '&nbsp;||&nbsp;<a href="?page=communities&action=message_board&cid=' . intval($_GET['cid']) . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
 						} else {
 							echo '&nbsp;||&nbsp;' . __('Next Page', $communities_text_domain);
 						}
@@ -1683,7 +1686,7 @@ function communities_output() {
 						} else {
 							$topic_sticky = '';
 						}
-						echo "<td valign='top'><strong><a href='?page=communities&action=topic&tid=" . $topic['topic_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $topic['topic_title'] ) . "</a>" . $topic_closed . $topic_sticky . "</strong></td>";
+						echo "<td valign='top'><strong><a href='?page=communities&action=topic&tid=" . $topic['topic_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $topic['topic_title'] ) . "</a>" . $topic_closed . $topic_sticky . "</strong></td>";
 						echo "<td valign='top'>" . $topic['topic_posts'] . "</td>";
 						$user_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $topic['topic_last_author']));
 						echo "<td valign='top'>" . $user_details->display_name . "</td>";
@@ -1707,13 +1710,13 @@ function communities_output() {
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                    <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo (isset($_POST['topic_title'])) ? $_POST['topic_title'] : ''; ?>" />
+                    <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo (isset($_POST['topic_title'])) ? sanitize_text_field($_POST['topic_title']) : ''; ?>" />
                     <br />
                     <?php _e('Required', $communities_text_domain) ?></td>
                     </tr>
                     <tr valign="top">
                     <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                    <td><textarea name="topic_content" id="topic_content" style="width: 95%" rows="10"><?php echo (isset($_POST['topic_content'])) ? $_POST['topic_content'] : ''; ?></textarea>
+                    <td><textarea name="topic_content" id="topic_content" style="width: 95%" rows="10"><?php echo (isset($_POST['topic_content'])) ? wp_kses($_POST['topic_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) : ''; ?></textarea>
                     <br />
                     <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                     </tr>
@@ -1724,7 +1727,10 @@ function communities_output() {
                         <tr valign="top">
                         <th scope="row"><?php _e('Sticky', $communities_text_domain) ?></th>
                         <td><select name="topic_sticky">
-							<?php if (!isset($_POST['topic_sticky'])) $_POST['topic_sticky'] = ''; ?>
+							<?php 
+							if (!isset($_POST['topic_sticky'])) $_POST['topic_sticky'] = ''; 
+							else $_POST['topic_sticky'] = sanitize_text_field($_POST['topic_sticky']);
+							?>
                             <option value="0" <?php if ($_POST['topic_sticky'] == '0' || $_POST['topic_sticky'] == '') echo 'selected="selected"'; ?>><?php _e('No', $communities_text_domain); ?></option>
                             <option value="1" <?php if ($_POST['topic_sticky'] == '1') echo 'selected="selected"'; ?>><?php _e('Yes', $communities_text_domain); ?></option>
                         </select>
@@ -1749,41 +1755,42 @@ function communities_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=message_board&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+						window.location='?page=communities&action=message_board&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=message_board&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=message_board&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
 				} else {
 					$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 					?>
-					<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <?php _e('New Topic', $communities_text_domain) ?></h2>
+					<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <?php _e('New Topic', $communities_text_domain) ?></h2>
 					<?php
 					if ( empty( $_POST['topic_title'] ) || empty( $_POST['topic_content'] ) ) {
 						?>
                         <p><?php _e('Please fill in all fields.', $communities_text_domain); ?></p>
-                        <form name="new_topic" method="POST" action="?page=communities&action=new_topic&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+                        <form name="new_topic" method="POST" action="?page=communities&action=new_topic&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                             <table class="form-table">
                             <tr valign="top">
                             <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                            <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo $_POST['topic_title']; ?>" />
+                            <td><input type="text" name="topic_title" id="topic_title" style="width: 95%" value="<?php echo sanitize_text_field($_POST['topic_title']); ?>" />
                             <br />
                             <?php _e('Required', $communities_text_domain) ?></td>
                             </tr>
                             <tr valign="top">
                             <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                            <td><textarea name="topic_content" id="topic_content" style="width: 95%" rows="10"><?php echo $_POST['topic_content']; ?></textarea>
+                            <td><textarea name="topic_content" id="topic_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['topic_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
                             <br />
                             <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                             </tr>
                             <?php
                             $member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
                             if (  $member_moderator == '1' || is_super_admin() ) {
+								if (!isset($_POST['topic_sticky'])) $_POST['topic_sticky'] == '0';
                             ?>
                                 <tr valign="top">
                                 <th scope="row"><?php _e('Sticky', $communities_text_domain) ?></th>
@@ -1807,7 +1814,7 @@ function communities_output() {
 						$topic_ID = communities_add_topic($_GET['cid'], $user_ID, $_POST['topic_title'], $_POST['topic_content'], $_POST['topic_sticky']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $topic_ID . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Topic added.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=topic&tid=" . $topic_ID . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic added.', $communities_text_domain)) . "';
 						</script>
 						";
 					}
@@ -1824,12 +1831,12 @@ function communities_output() {
 				$time_format = get_option('time_format');
 				$member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a><?php if ( $topic_details->topic_closed == '1' ) { echo ' (' . __('Closed', $communities_text_domain) . ')'; }; ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a><?php if ( $topic_details->topic_closed == '1' ) { echo ' (' . __('Closed', $communities_text_domain) . ')'; }; ?></h2>
                 <ul>
 	                <li><strong><?php _e('Started', $communities_text_domain); ?>:</strong> <?php echo date_i18n($date_format . ' ' . $time_format,$topic_details->topic_stamp); ?></li>
 	                <li><strong><?php _e('Last Updated', $communities_text_domain); ?>:</strong> <?php echo date_i18n($date_format . ' ' . $time_format,$topic_details->topic_last_updated_stamp); ?></li>
                     <?php
-                    $last_poster_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = ''", $topic_details->topic_last_author));
+                    $last_poster_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "users WHERE ID = '%d'", $topic_details->topic_last_author));
                     $last_poster_primary_blog = get_active_blog_for_user( $topic_details->topic_last_author );
 					?>
 	                <li><strong><?php _e('Last Poster', $communities_text_domain); ?>:</strong> <?php echo $last_poster_details->display_name; ?> (<?php 
@@ -1844,25 +1851,25 @@ function communities_output() {
                         <?php
 						if ( $topic_details->topic_closed == '1' ) {
 							?>
-							<a href="?page=communities&action=open_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Open', $communities_text_domain); ?></a> |
+							<a href="?page=communities&action=open_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Open', $communities_text_domain); ?></a> |
 							<?php
 						} else {
 							?>
-							<a href="?page=communities&action=close_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Close', $communities_text_domain); ?></a> |
+							<a href="?page=communities&action=close_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Close', $communities_text_domain); ?></a> |
 							<?php
 						}
 						if ( $topic_details->topic_sticky == '1' ) {
 							?>
-							<a href="?page=communities&action=unstick_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Unstick', $communities_text_domain); ?></a> |
+							<a href="?page=communities&action=unstick_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Unstick', $communities_text_domain); ?></a> |
 							<?php
 						} else {
 							?>
-							<a href="?page=communities&action=stick_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Make Sticky', $communities_text_domain); ?></a> |
+							<a href="?page=communities&action=stick_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Make Sticky', $communities_text_domain); ?></a> |
 							<?php
 						}
 						?>
-						<a href="?page=communities&action=edit_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Edit Title', $communities_text_domain); ?></a> |
-						<a href="?page=communities&action=remove_topic&tid=<?php echo (isset($_GET['tid'])) ? $_GET['tid'] : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? $_GET['cid'] : ''; ?>&start=<?php echo (isset($_GET['start'])) ? $_GET['start'] : ''; ?>&num=<?php echo (isset($_GET['num'])) ? $_GET['num'] : ''; ?>" style="text-decoration:none;"><?php _e('Remove', $communities_text_domain); ?></a>
+						<a href="?page=communities&action=edit_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Edit Title', $communities_text_domain); ?></a> |
+						<a href="?page=communities&action=remove_topic&tid=<?php echo (isset($_GET['tid'])) ? intval($_GET['tid']) : ''; ?>&cid=<?php echo (isset($_GET['cid'])) ? intval($_GET['cid']) : ''; ?>&start=<?php echo (isset($_GET['start'])) ? intval($_GET['start']) : ''; ?>&num=<?php echo (isset($_GET['num'])) ? intval($_GET['num']) : ''; ?>" style="text-decoration:none;"><?php _e('Remove', $communities_text_domain); ?></a>
                         </li>
     	                <?php
 					}
@@ -1927,7 +1934,10 @@ function communities_output() {
 					//=========================================================//
 						$class = '';
 						if (!isset($_GET['start'])) $_GET['start'] = '';
+						else $_GET['start'] = intval($_GET['start']);
+						
 						if (!isset($_GET['num'])) $_GET['num'] = '';
+						else $_GET['num'] = intval($_GET['num']);
 						
 						foreach ($posts as $post){
 						//=========================================================//)
@@ -1958,12 +1968,12 @@ function communities_output() {
 						echo __("Posted", $communities_text_domain) . ": " . date_i18n($date_format . ' ' . $time_format, $post['post_stamp']);
 						$time_difference = time() - $post['post_stamp'];
 						if ( $member_moderator == '1' || is_super_admin() ) {
-							echo " | <a href='?page=communities&action=edit_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' style='text-decoration:none;'>" . __("Edit", $communities_text_domain) . "</a>";
+							echo " | <a href='?page=communities&action=edit_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "' style='text-decoration:none;'>" . __("Edit", $communities_text_domain) . "</a>";
 							if ( $topic_details->topic_posts > 1 ) {
-								echo " | <a href='?page=communities&action=remove_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' style='text-decoration:none;'>" . __("Remove", $communities_text_domain) . "</a>";
+								echo " | <a href='?page=communities&action=remove_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "' style='text-decoration:none;'>" . __("Remove", $communities_text_domain) . "</a>";
 							}
 						} else if ( $post['post_author'] && $time_difference < 900 ) {
-							echo " | <a href='?page=communities&action=edit_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' style='text-decoration:none;'>" . __("Edit", $communities_text_domain) . "</a>";
+							echo " | <a href='?page=communities&action=edit_post&pid=" . $post['post_ID'] . "&tid=" . $topic_details->topic_ID . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "' style='text-decoration:none;'>" . __("Edit", $communities_text_domain) . "</a>";
 						}
 						echo "</div>";
 						echo "</td>";
@@ -1980,11 +1990,11 @@ function communities_output() {
 					?>
 					<br />
 					<h2><?php _e('New Post', $communities_text_domain) ?></h2>
-					<form name="new_post" method="POST" action="?page=communities&action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+					<form name="new_post" method="POST" action="?page=communities&action=new_post&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 						<table class="form-table">
 						<tr valign="top">
 						<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-						<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo (isset($_POST['post_content'])) ? $_POST['post_content'] : ''; ?></textarea>
+						<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo (isset($_POST['post_content'])) ? wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) : ''; ?></textarea>
 						<br />
 						<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
 						</tr>
@@ -2004,13 +2014,13 @@ function communities_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
@@ -2022,13 +2032,13 @@ function communities_output() {
 						if ( empty($_POST['post_content']) ) {
 							$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 							?>
-							<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a></h2>
+							<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a></h2>
 							<p><?php _e('Please provide some content.', $communities_text_domain); ?></p>
-							<form name="new_post" method="POST" action="?page=communities&action=new_post&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+							<form name="new_post" method="POST" action="?page=communities&action=new_post&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 								<table class="form-table">
 								<tr valign="top">
 								<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-								<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo $_POST['post_content']; ?></textarea>
+								<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
 								<br />
 								<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
 								</tr>
@@ -2044,13 +2054,13 @@ function communities_output() {
 							if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 								echo "
 								<script type='text/javascript'>
-								window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Post added.', $communities_text_domain)) . "';
+								window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Post added.', $communities_text_domain)) . "';
 								</script>
 								";
 							} else {
 								echo "
 								<script type='text/javascript'>
-								window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Post added.', $communities_text_domain)) . "';
+								window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Post added.', $communities_text_domain)) . "';
 								</script>
 								";
 							}
@@ -2070,8 +2080,8 @@ function communities_output() {
 				if ( $member_moderator == '1' || is_super_admin() || ( $post_details->post_author == $user_ID && $time_difference < 900 ) ) {
 					$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 					?>
-					<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post', $communities_text_domain); ?></h2>
-					<form name="edit_post" method="POST" action="?page=communities&action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+					<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post', $communities_text_domain); ?></h2>
+					<form name="edit_post" method="POST" action="?page=communities&action=edit_post_process&pid=<?php echo intval($_GET['pid']); ?>&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 						<table class="form-table">
 						<tr valign="top">
 						<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
@@ -2095,13 +2105,13 @@ function communities_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
@@ -2116,13 +2126,13 @@ function communities_output() {
 						if ( empty( $_POST['post_content'] ) ) {
 							$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 							?>
-							<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post', $communities_text_domain); ?></h2>
+							<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Post', $communities_text_domain); ?></h2>
                             <p><?php _e('Please provide some content', $communities_text_domain); ?></p>
-							<form name="edit_post" method="POST" action="?page=communities&action=edit_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+							<form name="edit_post" method="POST" action="?page=communities&action=edit_post_process&pid=<?php echo intval($_GET['pid']); ?>&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 								<table class="form-table">
 								<tr valign="top">
 								<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-								<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo $_POST['post_content']; ?></textarea>
+								<td><textarea name="post_content" id="post_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
 								<br />
 								<?php _e('Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
 								</tr>
@@ -2138,13 +2148,13 @@ function communities_output() {
 							if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 								echo "
 								<script type='text/javascript'>
-								window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+								window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 								</script>
 								";
 							} else {
 								echo "
 								<script type='text/javascript'>
-								window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+								window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 								</script>
 								";
 							}
@@ -2162,9 +2172,9 @@ function communities_output() {
 			if ( $member_moderator == '1' || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Post', $communities_text_domain); ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Post', $communities_text_domain); ?></h2>
 
-				<form name="remove_post" method="POST" action="?page=communities&action=remove_post_process&pid=<?php echo $_GET['pid']; ?>&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+				<form name="remove_post" method="POST" action="?page=communities&action=remove_post_process&pid=<?php echo intval($_GET['pid']); ?>&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -2189,13 +2199,13 @@ function communities_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				}
@@ -2209,20 +2219,20 @@ function communities_output() {
 						communities_delete_post($_GET['tid'], $_GET['pid']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Post removed.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Post removed.', $communities_text_domain)) . "';
 						</script>
 						";
 					} else {
 						if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 							</script>
 							";
 						} else {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 							</script>
 							";
 						}
@@ -2238,13 +2248,13 @@ function communities_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Topic closed.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Topic closed.', $communities_text_domain)) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Topic closed.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic closed.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -2258,13 +2268,13 @@ function communities_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Topic opened.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Topic opened.', $communities_text_domain)) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Topic opened.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic opened.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -2278,13 +2288,13 @@ function communities_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Topic made sticky.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Topic made sticky.', $communities_text_domain)) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Topic made sticky.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic made sticky.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -2298,13 +2308,13 @@ function communities_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Sticky removed.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Sticky removed.', $communities_text_domain)) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Sticky removed.', $communities_text_domain)) . "';
+					window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Sticky removed.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -2317,9 +2327,9 @@ function communities_output() {
 				$topic_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_ID = '%d' ", $_GET['tid']));
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Topic', $communities_text_domain); ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Remove Topic', $communities_text_domain); ?></h2>
 
-				<form name="remove_topic" method="POST" action="?page=communities&action=remove_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+				<form name="remove_topic" method="POST" action="?page=communities&action=remove_topic_process&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -2344,13 +2354,13 @@ function communities_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
@@ -2361,20 +2371,20 @@ function communities_output() {
 						communities_delete_topic($_GET['tid']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=message_board&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Topic Removed.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=message_board&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic Removed.', $communities_text_domain)) . "';
 						</script>
 						";
 					} else {
 						if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 							</script>
 							";
 						} else {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 							</script>
 							";
 						}
@@ -2389,8 +2399,8 @@ function communities_output() {
 				$topic_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_ID = '%d' ", $_GET['tid']));
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic', $communities_text_domain); ?></h2>
-                <form name="edit_topic" method="POST" action="?page=communities&action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic', $communities_text_domain); ?></h2>
+                <form name="edit_topic" method="POST" action="?page=communities&action=edit_topic_process&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
@@ -2413,13 +2423,13 @@ function communities_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
@@ -2430,9 +2440,9 @@ function communities_output() {
 						$topic_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_ID = '%d' ", $_GET['tid']));
 						$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 						?>
-						<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic', $communities_text_domain); ?></h2>
+						<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Message Board', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=topic&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes($topic_details->topic_title); ?></a> &raquo; <?php _e('Edit Topic', $communities_text_domain); ?></h2>
                         <p><?php _e('Please provide a title.', $communities_text_domain); ?></p>
-						<form name="edit_topic" method="POST" action="?page=communities&action=edit_topic_process&tid=<?php echo $_GET['tid']; ?>&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+						<form name="edit_topic" method="POST" action="?page=communities&action=edit_topic_process&tid=<?php echo intval($_GET['tid']); ?>&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
@@ -2452,13 +2462,13 @@ function communities_output() {
 						if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Changes Saved.', $communities_text_domain)) . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Changes Saved.', $communities_text_domain)) . "';
 							</script>
 							";
 						} else {
 							echo "
 							<script type='text/javascript'>
-							window.location='?page=communities&action=topic&tid=" . $_GET['tid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Changes Saved.', $communities_text_domain)) . "';
+							window.location='?page=communities&action=topic&tid=" . intval($_GET['tid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Changes Saved.', $communities_text_domain)) . "';
 							</script>
 							";
 						}
@@ -2472,7 +2482,7 @@ function communities_output() {
 			if ( $member_count > 0 || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a></h2>
                 <?php
 				$member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
 				if (  $member_moderator == '1' || is_super_admin() ) {
@@ -2480,7 +2490,7 @@ function communities_output() {
 					<h3><?php _e('Manage', $communities_text_domain) ?></h3>
 					<ul>
 					<li><strong><?php _e('Actions', $communities_text_domain); ?>:</strong>
-					<a href="?page=communities&action=new_page&ppid=0&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('New Page', $communities_text_domain); ?></a>
+					<a href="?page=communities&action=new_page&ppid=0&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('New Page', $communities_text_domain); ?></a>
 					</li>
 					</ul>
 					<?php
@@ -2493,49 +2503,49 @@ function communities_output() {
 				if ( count( $pages[0] ) > 0 ) {
 					echo "<ul>";
 					foreach ( $pages[0] as $page ) {
-						echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+						echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 						$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 						$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 						if ( count( $pages[$page['page_ID']] ) > 0 ) {
 							echo "<ul>";
 							foreach ( $pages[$page['page_ID']] as $page ) {
-								echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+								echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 								$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 								$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 								if ( count( $pages[$page['page_ID']] ) > 0 ) {
 									echo "<ul>";
 									foreach ( $pages[$page['page_ID']] as $page ) {
-										echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+										echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 										$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 										$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 										if ( count( $pages[$page['page_ID']] ) > 0 ) {
 											echo "<ul>";
 											foreach ( $pages[$page['page_ID']] as $page ) {
-												echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+												echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 												$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 												$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 												if ( count( $pages[$page['page_ID']] ) > 0 ) {
 													echo "<ul>";
 													foreach ( $pages[$page['page_ID']] as $page ) {
-														echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+														echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 														$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 														$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 														if ( count( $pages[$page['page_ID']] ) > 0 ) {
 															echo "<ul>";
 															foreach ( $pages[$page['page_ID']] as $page ) {
-																echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+																echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 																$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 																$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 																if ( count( $pages[$page['page_ID']] ) > 0 ) {
 																	echo "<ul>";
 																	foreach ( $pages[$page['page_ID']] as $page ) {
-																		echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+																		echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 																		$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 																		$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 																		if ( count( $pages[$page['page_ID']] ) > 0 ) {
 																			echo "<ul>";
 																			foreach ( $pages[$page['page_ID']] as $page ) {
-																				echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
+																				echo "<li><strong><a href='?page=communities&action=page&pid=" . $page['page_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'>" . stripslashes( $page['page_title'] ) . "</a></strong></li>";
 																				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' AND page_parent_page_ID = '%d'", $_GET['cid'], $page['page_ID']);
 																				$pages[$page['page_ID']] = $wpdb->get_results( $query, ARRAY_A );
 																			}
@@ -2576,38 +2586,38 @@ function communities_output() {
 				$page_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $_GET['pid']));
 				if ( $page_details->page_parent_page_ID == '0' ) {
 					$depth = 1;
-					$page_title = '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+					$page_title = '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 				} else {
 					$page_2_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $page_details->page_parent_page_ID));
 					if ( $page_2_details->page_parent_page_ID == '0' ) {
 						$depth = 2;
-						$page_title = '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+						$page_title = '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 					} else {
 						$page_3_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $page_2_details->page_parent_page_ID));
 						if ( $page_3_details->page_parent_page_ID == '0' ) {
 							$depth = 3;
-							$page_title = '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+							$page_title = '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 						} else {
 							$page_4_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $page_3_details->page_parent_page_ID));
 							if ( $page_4_details->page_parent_page_ID == '0' ) {
 								$depth = 4;
-								$page_title = '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+								$page_title = '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 							} else {
 								$page_5_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $page_4_details->page_parent_page_ID));
 								if ( $page_5_details->page_parent_page_ID == '0' ) {
 									$depth = 5;
-									$page_title = '<a href="?page=communities&action=page&pid=' . $page_5_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_5_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+									$page_title = '<a href="?page=communities&action=page&pid=' . $page_5_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_5_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 								} else {
 									$page_6_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_ID = '%d' ", $page_5_details->page_parent_page_ID));
 									$depth = 6;
-									$page_title = '<a href="?page=communities&action=page&pid=' . $page_6_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_6_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_5_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_5_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . $_GET['cid'] . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
+									$page_title = '<a href="?page=communities&action=page&pid=' . $page_6_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_6_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_5_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_5_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_4_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_4_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_3_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_3_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_2_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_2_details->page_title . '</a>' . ' &raquo; ' . '<a href="?page=communities&action=page&pid=' . $page_details->page_ID . '&cid=' . intval($_GET['cid']) . '" style="text-decoration:none;">' . $page_details->page_title . '</a>';
 								}
 							}
 						}
 					}
 				}
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php echo $page_title; ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php echo $page_title; ?></h2>
                 <?php
 				$member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
 				if (  $member_moderator == '1' || is_super_admin() ) {
@@ -2618,12 +2628,12 @@ function communities_output() {
                     <?php
 					if ( $depth < 6 ) {
 						?>
-						<a href="?page=communities&action=new_page&ppid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('New Page', $communities_text_domain); ?></a> |
+						<a href="?page=communities&action=new_page&ppid=<?php echo intval($_GET['pid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('New Page', $communities_text_domain); ?></a> |
 						<?php
                     }
                     ?>
-					<a href="?page=communities&action=edit_page&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Edit Page', $communities_text_domain); ?></a> |
-					<a href="?page=communities&action=remove_page&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Remove Page', $communities_text_domain); ?></a>
+					<a href="?page=communities&action=edit_page&pid=<?php echo intval($_GET['pid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Edit Page', $communities_text_domain); ?></a> |
+					<a href="?page=communities&action=remove_page&pid=<?php echo intval($_GET['pid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Remove Page', $communities_text_domain); ?></a>
 					</li>
 					</ul>
                     <h3><?php _e('Page', $communities_text_domain) ?></h3>
@@ -2640,18 +2650,18 @@ function communities_output() {
 			if (  $member_moderator == '1' || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('New Page', $communities_text_domain); ?></h2>
-                <form name="new_page" method="POST" action="?page=communities&action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('New Page', $communities_text_domain); ?></h2>
+                <form name="new_page" method="POST" action="?page=communities&action=new_page_process&ppid=<?php echo intval($_GET['ppid']); ?>&cid=<?php echo intval($_GET['cid']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                    <td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo (isset($_POST['page_title'])) ? $_POST['page_title'] : ''; ?>" />
+                    <td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo (isset($_POST['page_title'])) ? sanitize_text_field($_POST['page_title']) : ''; ?>" />
                     <br />
                     <?php _e('Required', $communities_text_domain) ?></td>
                     </tr>
                     <tr valign="top">
                     <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                    <td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo (isset($_POST['page_content'])) ? $_POST['page_content'] : ''; ?></textarea>
+                    <td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo (isset($_POST['page_content'])) ? wp_kses($_POST['page_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) : ''; ?></textarea>
                     <br />
                     <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                     </tr>
@@ -2670,35 +2680,35 @@ function communities_output() {
 				if ((!isset($_GET['ppid'])) || ($_GET['ppid'] == '0')) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=wiki&cid=" . $_GET['cid'] . "';
+					window.location='?page=communities&action=wiki&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=page&pid=" . $_GET['ppid'] . "&cid=" . $_GET['cid'] . "';
+					window.location='?page=communities&action=page&pid=" . intval($_GET['ppid']) . "&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				}
 			} else {
-				$member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", $_GET['cid'], $user_ID));
+				$member_moderator = $wpdb->get_var($wpdb->prepare("SELECT member_moderator FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID = '%d'", intval($_GET['cid']), $user_ID));
 				if (  $member_moderator == '1' || is_super_admin() ) {
 					if ( empty( $_POST['page_title'] ) || empty( $_POST['page_content'] ) ) {
 						$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 						?>
-						<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('New Page', $communities_text_domain); ?></h2>
+						<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('New Page', $communities_text_domain); ?></h2>
                         <p><?php _e('Please fill in all fields.', $communities_text_domain); ?></p>
-						<form name="new_page" method="POST" action="?page=communities&action=new_page_process&ppid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
+						<form name="new_page" method="POST" action="?page=communities&action=new_page_process&ppid=<?php echo intval($_GET['ppid']); ?>&cid=<?php echo intval($_GET['cid']); ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo $_POST['page_title']; ?>" />
+							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo sanitize_text_field($_POST['page_title']); ?>" />
 							<br />
 							<?php _e('Required', $communities_text_domain) ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-							<td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo $_POST['page_content']; ?></textarea>
+							<td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['page_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
 							<br />
 							<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
 							</tr>
@@ -2713,7 +2723,7 @@ function communities_output() {
 						$page_ID = communities_add_page($_GET['cid'], $_GET['ppid'], $_POST['page_title'], $_POST['page_content']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=page&pid=" . $page_ID . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Page published.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=page&pid=" . $page_ID . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Page published.', $communities_text_domain)) . "';
 						</script>
 						";
 					}
@@ -2727,8 +2737,8 @@ function communities_output() {
 			if (  $member_moderator == '1' || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Edit Page', $communities_text_domain); ?></h2>
-                <form name="new_page" method="POST" action="?page=communities&action=edit_page_process&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>">
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Edit Page', $communities_text_domain); ?></h2>
+                <form name="new_page" method="POST" action="?page=communities&action=edit_page_process&pid=<?php echo intval($_GET['pid']); ?>&cid=<?php echo intval($_GET['cid']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
@@ -2755,16 +2765,16 @@ function communities_output() {
 		case "edit_page_process":
 			if ( isset( $_POST['Cancel'] ) ) {
 				
-				if ((!isset($_GET['ppid'])) || ($_GET['ppid'] == '0')) {
+				if ((!isset($_GET['ppid'])) || (intval($_GET['ppid']) == '0')) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=wiki&cid=" . $_GET['cid'] . "';
+					window.location='?page=communities&action=wiki&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=communities&action=page&pid=" . $_GET['pid'] . "&cid=" . $_GET['cid'] . "';
+					window.location='?page=communities&action=page&pid=" . intval($_GET['pid']) . "&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 					
@@ -2775,19 +2785,19 @@ function communities_output() {
 					if ( empty( $_POST['page_title'] ) || empty( $_POST['page_content'] ) ) {
 						$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 						?>
-						<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Edit Page', $communities_text_domain); ?></h2>
+						<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Edit Page', $communities_text_domain); ?></h2>
                         <p><?php _e('Please fill in all fields.', $communities_text_domain); ?></p>
-						<form name="new_page" method="POST" action="?page=communities&action=edit_page_process&pid=<?php echo $_GET['ppid']; ?>&cid=<?php echo $_GET['cid']; ?>">
+						<form name="new_page" method="POST" action="?page=communities&action=edit_page_process&pid=<?php echo intval($_GET['ppid']); ?>&cid=<?php echo intval($_GET['cid']); ?>">
 							<table class="form-table">
 							<tr valign="top">
 							<th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo $_POST['page_title']; ?>" />
+							<td><input type="text" name="page_title" id="page_title" style="width: 95%" value="<?php echo sanitize_text_field($_POST['page_title']); ?>" />
 							<br />
 							<?php _e('Required', $communities_text_domain) ?></td>
 							</tr>
 							<tr valign="top">
 							<th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-							<td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo $_POST['page_content']; ?></textarea>
+							<td><textarea name="page_content" id="page_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['page_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
 							<br />
 							<?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
 							</tr>
@@ -2802,7 +2812,7 @@ function communities_output() {
 						communities_update_page($_GET['pid'], $_POST['page_title'], $_POST['page_content']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=page&pid=" . $_GET['pid'] . "&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=page&pid=" . intval($_GET['pid']) . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 						</script>
 						";
 					}
@@ -2815,8 +2825,8 @@ function communities_output() {
 			if (  $member_moderator == '1' || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Remove Page', $communities_text_domain); ?></h2>
-                <form name="leave_community" method="POST" action="?page=communities&action=remove_page_process&pid=<?php echo $_GET['pid']; ?>&cid=<?php echo $_GET['cid']; ?>">
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Wiki', $communities_text_domain) ?></a> &raquo; <?php _e('Remove Page', $communities_text_domain); ?></h2>
+                <form name="leave_community" method="POST" action="?page=communities&action=remove_page_process&pid=<?php echo intval($_GET['pid']); ?>&cid=<?php echo intval($_GET['cid']); ?>">
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -2840,7 +2850,7 @@ function communities_output() {
 			if ( isset( $_POST['Cancel'] ) ) {
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=communities&action=page&pid=" . $_GET['pid'] . "&cid=" . $_GET['cid'] . "';
+				window.location='?page=communities&action=page&pid=" . intval($_GET['pid']) . "&cid=" . intval($_GET['cid']) . "';
 				</script>
 				";
 			} else {
@@ -2850,13 +2860,13 @@ function communities_output() {
 						communities_delete_page($_GET['pid']);
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=wiki&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Page removed.', $communities_text_domain)) . "';
+						window.location='?page=communities&action=wiki&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Page removed.', $communities_text_domain)) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=communities&action=page&pid=" . $_GET['pid'] . "&cid=" . $_GET['cid'] . "';
+						window.location='?page=communities&action=page&pid=" . intval($_GET['pid']) . "&cid=" . intval($_GET['cid']) . "';
 						</script>
 						";
 					}
@@ -2869,7 +2879,7 @@ function communities_output() {
 			if ( $member_count > 0 || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Dashboard', $communities_text_domain) ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Dashboard', $communities_text_domain) ?></a></h2>
                 <div id="dashboard-widgets-wrap">
 					<div id='dashboard-widgets' class='metabox-holder'>
 
@@ -2878,7 +2888,7 @@ function communities_output() {
 							<div class='postbox-container' style='width:49%;'>
                             <div id='side-sortables' class='meta-box-sortables'>
                             <div id="dashboard_quick_press" class="postbox " >
-                               <h3 class='hndle'><span><?php _e('Recent Wiki Pages', $communities_text_domain); ?></span> (<small><a href="?page=communities&action=wiki&cid=<?php echo $_GET['cid']; ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
+                               <h3 class='hndle'><span><?php _e('Recent Wiki Pages', $communities_text_domain); ?></span> (<small><a href="?page=communities&action=wiki&cid=<?php echo intval($_GET['cid']); ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
                                 <div class="inside">
 								<?php
                                 $query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_pages WHERE page_community_ID = '%d' ORDER BY page_ID DESC LIMIT 9", $_GET['cid']);
@@ -2887,7 +2897,7 @@ function communities_output() {
                                     echo "<ul>";
                                     foreach ( $pages as $page ) {
                                         ?>
-                                        <li><strong><a href="?page=communities&action=page&pid=<?php echo $page['page_ID']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $page['page_title'] ); ?></a></strong></li>
+                                        <li><strong><a href="?page=communities&action=page&pid=<?php echo $page['page_ID']; ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $page['page_title'] ); ?></a></strong></li>
                                         <?php
                                     }
                                     echo "</ul>";
@@ -2901,7 +2911,7 @@ function communities_output() {
                             </div>
 
                             <div id="dashboard_quick_press" class="postbox " >
-                               <h3 class='hndle'><span><?php _e('Recent News', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=news&cid=<?php echo $_GET['cid']; ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
+                               <h3 class='hndle'><span><?php _e('Recent News', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=news&cid=<?php echo intval($_GET['cid']); ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
                                 <div class="inside">
 								<?php
                                 $query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_community_ID = '%d' ORDER BY news_item_ID DESC LIMIT 9", $_GET['cid']);
@@ -2910,7 +2920,7 @@ function communities_output() {
                                     echo "<ul>";
                                     foreach ( $news_items as $news_item ) {
                                         ?>
-                                        <li><strong><a href="?page=communities&action=news_item&niid=<?php echo $news_item['news_item_ID']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $news_item['news_item_title'] ); ?></a></strong></li>
+                                        <li><strong><a href="?page=communities&action=news_item&niid=<?php echo $news_item['news_item_ID']; ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $news_item['news_item_title'] ); ?></a></strong></li>
                                         <?php
                                     }
                                     echo "</ul>";
@@ -2935,7 +2945,7 @@ function communities_output() {
                             <div class='postbox-container' style='width:49%;'>
                             <div id='side-sortables' class='meta-box-sortables'>
                             <div id="dashboard_right_now" class="postbox " >
-                               <h3 class='hndle'><span><?php _e('Recent Message Board Topics', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=message_board&cid=<?php echo $_GET['cid']; ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
+                               <h3 class='hndle'><span><?php _e('Recent Message Board Topics', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=message_board&cid=<?php echo intval($_GET['cid']); ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
                                 <div class="inside">
 								<?php
                                 $query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_topics WHERE topic_community_ID = '%d' AND topic_closed = '%d' ORDER BY topic_ID DESC LIMIT 9", $_GET['cid'], '0');
@@ -2944,7 +2954,7 @@ function communities_output() {
                                     echo "<ul>";
                                     foreach ( $topics as $topic ) {
                                         ?>
-                                        <li><strong><a href="?page=communities&action=topic&tid=<?php echo $topic['topic_ID']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $topic['topic_title'] ); ?></a></strong></li>
+                                        <li><strong><a href="?page=communities&action=topic&tid=<?php echo $topic['topic_ID']; ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $topic['topic_title'] ); ?></a></strong></li>
                                         <?php
                                     }
                                     echo "</ul>";
@@ -2959,7 +2969,7 @@ function communities_output() {
                             </div>
 
                             <div id="dashboard_right_now" class="postbox " >
-                               <h3 class='hndle'><span><?php _e('Recent Members', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=member_list&cid=<?php echo $_GET['cid']; ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
+                               <h3 class='hndle'><span><?php _e('Recent Members', $communities_text_domain); ?></span> (<small><a style="text-decoration:none;" href="?page=communities&action=member_list&cid=<?php echo intval($_GET['cid']); ?>"><?php _e('See All', $communities_text_domain); ?></a></small>)</h3>
                                 <div class="inside">
 								<?php
                                 $query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities_members WHERE community_ID = '%d' AND member_user_ID != '%d' ORDER BY member_ID DESC LIMIT 9", $_GET['cid'], $user_ID);
@@ -3000,7 +3010,7 @@ function communities_output() {
 			if ( $member_count > 0 || is_super_admin() ) {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=news&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('News', $communities_text_domain) ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=news&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('News', $communities_text_domain) ?></a></h2>
 				<?php
                 if( isset( $_GET[ 'start' ] ) == false ) {
                     $start = 0;
@@ -3064,7 +3074,7 @@ function communities_output() {
                         foreach ($news_items as $news_item){
                         //=========================================================//
                         echo "<tr class='" . $class . "'>";
-                        echo "<td valign='top'><a href='?page=communities&action=news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "' style='text-decoration:none;'><strong>" . stripslashes( $news_item['news_item_title'] ) . "</strong></a></td>";
+                        echo "<td valign='top'><a href='?page=communities&action=news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . intval($_GET['cid']) . "' style='text-decoration:none;'><strong>" . stripslashes( $news_item['news_item_title'] ) . "</strong></a></td>";
                         echo "<td valign='top'>" . date_i18n( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
                         echo "</tr>";
                         $class = ('alternate' == $class) ? '' : 'alternate';
@@ -3089,7 +3099,7 @@ function communities_output() {
 				$news_item_title = $wpdb->get_var($wpdb->prepare("SELECT news_item_title FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_ID = '%d'", $_GET['niid']));
 				$news_item_content = $wpdb->get_var($wpdb->prepare("SELECT news_item_content FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_ID = '%d'", $_GET['niid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=news&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('News', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=news_item&niid=<?php echo $_GET['niid']; ?>&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $news_item_title ); ?></a></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=communities&action=news&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('News', $communities_text_domain) ?></a> &raquo; <a href="?page=communities&action=news_item&niid=<?php echo intval($_GET['niid']); ?>&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $news_item_title ); ?></a></h2>
                 <br />
                 <p><?php echo $news_item_content; ?></p>
                 <?php
@@ -3112,20 +3122,21 @@ function communities_add_output() {
 	if (!isset($_POST['community_name']))
 		$_POST['community_name'] 			= '';
 	else
-		$_POST['community_name']	= filter_var($_POST['community_name'], FILTER_SANITIZE_STRING);
+		$_POST['community_name']	= sanitize_text_field($_POST['community_name']);
 
 	if (!isset($_POST['community_description']))
 		$_POST['community_description'] 			= '';
 	else
-		$_POST['community_description']	= filter_var($_POST['community_description'], FILTER_SANITIZE_STRING);
+		$_POST['community_description']	= sanitize_text_field($_POST['community_description']);
 
 	if (!isset($_POST['community_private']))
 		$_POST['community_private'] 			= '';
 	else
-		$_POST['community_private']	= filter_var($_POST['community_private'], FILTER_SANITIZE_NUMBER_INT);
-
+		$_POST['community_private']	= intval($_POST['community_private']);
 
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
+	else $_GET[ 'action' ]	= sanitize_text_field($_GET[ 'action' ]);
+	
 	switch($_GET['action']) {
 /*
 		case 'edit_community':
@@ -3171,14 +3182,14 @@ function communities_add_output() {
 			<table class="form-table">
 			<tr valign="top">
 				<th scope="row"><?php _e('Name', $communities_text_domain) ?></th>
-				<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo $_POST['community_name']; ?>" />
+				<td><input type="text" name="community_name" id="community_name" style="width: 95%" value="<?php echo sanitize_text_field($_POST['community_name']); ?>" />
 				<br />
 				<?php _e('Required', $communities_text_domain) ?></td>
 			</tr>
 			<tr valign="top">
 				<th scope="row"><?php _e('Description', $communities_text_domain) ?></th>
 				<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" 
-					value="<?php echo $_POST['community_description']; ?>" />
+					value="<?php echo wp_kses($_POST['community_description'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?>" />
 				<br />
 				<?php _e('Required', $communities_text_domain) ?></td>
 			</tr>
@@ -3203,16 +3214,26 @@ function communities_manage_output() {
 	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $communities_text_domain;
 	
 	if (isset($_GET['updated'])) {
-		?><div id="message" class="updated fade"><p><?php echo( urldecode( $_GET['updatedmsg'] ) ) ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php echo( sanitize_text_field( $_GET['updatedmsg'] ) ) ?></p></div><?php
 	}
 	
 	if (!isset($_GET['start'])) $_GET['start'] = 0;
+	else $_GET['start'] = intval($_GET['start']);
+	
 	if (!isset($_GET['num'])) $_GET['num'] = 10;
+	else $_GET['num'] = intval($_GET['num']);
+	
 	if (!isset($_GET['order'])) $_GET['order'] = "ASC";
+	else $_GET['order'] = sanitize_text_field($_GET['order']);
+	if (($_GET['order'] !== "ASC") && ($_GET['order'] !== "DESC")) $_GET['order'] = "ASC";
+	
 	if (!isset($_GET['orderby'])) $_GET['orderby'] = "community_name";
+	else $_GET['orderby'] = sanitize_text_field($_GET['orderby']);
 	
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
+	else $_GET[ 'action' ] = sanitize_text_field($_GET[ 'action' ]);
+	
 	switch( $_GET[ 'action' ] ) {
 		//---------------------------------------------------//
 		case '':
@@ -3237,12 +3258,10 @@ function communities_manage_output() {
 				$num = intval( $_GET[ 'num' ] );
 			}
 			if ( is_super_admin() ) {
-				$query = "SELECT * FROM " . $wpdb->base_prefix . "communities";
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY %s %s LIMIT %d, %d", $_GET['orderby'], $_GET['order'], $_get['start'], $_GET['num']);
 			} else {
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '%d'", $user_ID);
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = '%d' ORDER BY %s %s LIMIT %d, %d", $user_ID, $_GET['orderby'], $_GET['order'], $_get['start'], $_GET['num']);
 			}
-			$query .= " ORDER BY ". $_GET['orderby']." ". $_GET['order'];
-			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 			//echo "query<pre>"; print_r($query); echo "</pre>";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
 			if( count( $communities ) < $num ) {
@@ -3259,7 +3278,7 @@ function communities_manage_output() {
 					<fieldset>
 					<?php
 
-					$order_sort = "order=" . $_GET[ 'order' ] . "&orderby=" . $_GET[ 'orderby' ];
+					$order_sort = "order=" . sanitize_text_field($_GET[ 'order' ]) . "&orderby=" . sanitize_text_field($_GET[ 'orderby' ]);
 
 					if( $start == 0 ) {
 						echo __('Previous Page', $communities_text_domain);
@@ -3388,9 +3407,9 @@ function communities_manage_output() {
 			$community_description = $wpdb->get_var($wpdb->prepare("SELECT community_description FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			$community_private = $wpdb->get_var($wpdb->prepare("SELECT community_private FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit Community', $communities_text_domain) ?></h2>
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit Community', $communities_text_domain) ?></h2>
 			<form name="edit_community" method="POST" action="?page=manage-communities&action=edit_community_process">
-	            <input type="hidden" name="cid" value="<?php echo $_GET['cid']; ?>" />
+	            <input type="hidden" name="cid" value="<?php echo intval($_GET['cid']); ?>" />
 				<table class="form-table">
 				<tr valign="top">
 				<th scope="row"><?php _e('Description', $communities_text_domain) ?></th>
@@ -3427,17 +3446,17 @@ function communities_manage_output() {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_REQUEST['cid']));
 				//die();
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit Community', $communities_text_domain) ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit Community', $communities_text_domain) ?></h2>
 				<?php
 				if ( empty( $_POST['community_description'] ) ) {
 					?>
 					<p><?php _e('Please fill in all fields.', $communities_text_domain) ?></p>
 					<form name="edit_community" method="POST" action="?page=manage-communities&action=edit_community_process">
-                    	<input type="hidden" name="cid" value="<?php echo $_POST['cid']; ?>" />
+                    	<input type="hidden" name="cid" value="<?php echo intval($_POST['cid']); ?>" />
 						<table class="form-table">
 						<tr valign="top">
 						<th scope="row"><?php _e('Description', $communities_text_domain) ?></th>
-						<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo $_POST['community_description']; ?>" />
+						<td><input type="text" name="community_description" id="community_description" style="width: 95%" maxlength="250" value="<?php echo wp_kses($_POST['community_description'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?>" />
 						<br />
 						<?php _e('Required', $communities_text_domain) ?></td>
 						</tr>
@@ -3470,9 +3489,9 @@ function communities_manage_output() {
 		case "remove_community":
 			$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Remove', $communities_text_domain) ?></h2>
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Remove', $communities_text_domain) ?></h2>
             <form name="edit_community" method="POST" action="?page=manage-communities&action=remove_community_process">
-                <input type="hidden" name="cid" value="<?php echo $_GET['cid']; ?>" />
+                <input type="hidden" name="cid" value="<?php echo intval($_GET['cid']); ?>" />
                 <table class="form-table">
                 <tr valign="top">
                 <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -3527,7 +3546,7 @@ function communities_manage_output() {
 				die('Nice try');
 			}
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=manage-communities&action=member_list&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php _e('Members', $communities_text_domain) ?></a></h2>
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <a href="?page=manage-communities&action=member_list&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php _e('Members', $communities_text_domain) ?></a></h2>
             <?php
 			if( isset( $_GET[ 'start' ] ) == false ) {
 				$start = 0;
@@ -3561,12 +3580,12 @@ function communities_manage_output() {
 					if( $start == 0 ) {
 						echo __('Previous Page', $communities_text_domain);
 					} elseif( $start <= 30 ) {
-						echo '<a href="?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+						echo '<a href="?page=manage-communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=0&' . $order_sort . ' " style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					} else {
-						echo '<a href="?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
+						echo '<a href="?page=manage-communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=' . ( $start - $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Previous Page', $communities_text_domain) . '</a>';
 					}
 					if ( $next ) {
-						echo '&nbsp;||&nbsp;<a href="?page=manage-communities&action=member_list&cid=' . $_GET['cid'] . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
+						echo '&nbsp;||&nbsp;<a href="?page=manage-communities&action=member_list&cid=' . intval($_GET['cid']) . '&start=' . ( $start + $num ) . '&' . $order_sort . '" style="text-decoration:none;" >' . __('Next Page', $communities_text_domain) . '</a>';
 					} else {
 						echo '&nbsp;||&nbsp;' . __('Next Page', $communities_text_domain);
 					}
@@ -3620,9 +3639,9 @@ function communities_manage_output() {
 					}
 
 					if ( $member['member_moderator'] == '1' ) {
-						echo "<td valign='top'><a href='?page=manage-communities&action=remove_moderator&uid=" . $member['member_user_ID'] . "&cid=" . $_GET['cid'] . "&num=" . $_GET['num'] . "&start=" . $_GET['start'] . "' rel='permalink' class='delete'>" . __('Remove Moderator Privelege', $communities_text_domain) . "</a></td>";
+						echo "<td valign='top'><a href='?page=manage-communities&action=remove_moderator&uid=" . $member['member_user_ID'] . "&cid=" . intval($_GET['cid']) . "&num=" . intval($_GET['num']) . "&start=" . intval($_GET['start']) . "' rel='permalink' class='delete'>" . __('Remove Moderator Privelege', $communities_text_domain) . "</a></td>";
 					} else {
-						echo "<td valign='top'><a href='?page=manage-communities&action=add_moderator&uid=" . $member['member_user_ID'] . "&cid=" . $_GET['cid'] . "&num=" . $_GET['num'] . "&start=" . $_GET['start'] . "' rel='permalink' class='edit'>" . __('Add Moderator Privelege', $communities_text_domain) . "</a></td>";
+						echo "<td valign='top'><a href='?page=manage-communities&action=add_moderator&uid=" . $member['member_user_ID'] . "&cid=" . intval($_GET['cid']) . "&num=" . intval($_GET['num']) . "&start=" . intval($_GET['start']) . "' rel='permalink' class='edit'>" . __('Add Moderator Privelege', $communities_text_domain) . "</a></td>";
 					}
 					echo "</tr>";
 					$class = ('alternate' == $class) ? '' : 'alternate';
@@ -3644,13 +3663,13 @@ function communities_manage_output() {
 			if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=manage-communities&action=member_list&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege added.', $communities_text_domain)) . "';
+				window.location='?page=manage-communities&action=member_list&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege added.', $communities_text_domain)) . "';
 				</script>
 				";
 			} else {
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=manage-communities&action=member_list&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege added.', $communities_text_domain)) . "';
+				window.location='?page=manage-communities&action=member_list&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege added.', $communities_text_domain)) . "';
 				</script>
 				";
 			}
@@ -3665,13 +3684,13 @@ function communities_manage_output() {
 			if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=manage-communities&action=member_list&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege removed.', $communities_text_domain)) . "';
+				window.location='?page=manage-communities&action=member_list&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege removed.', $communities_text_domain)) . "';
 				</script>
 				";
 			} else {
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=manage-communities&action=member_list&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege removed.', $communities_text_domain)) . "';
+				window.location='?page=manage-communities&action=member_list&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Moderator privelege removed.', $communities_text_domain)) . "';
 				</script>
 				";
 			}
@@ -3684,7 +3703,7 @@ function communities_manage_output() {
 			}
 			$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Manage News', $communities_text_domain) ?></h2>
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Manage News', $communities_text_domain) ?></h2>
 			<?php
 			if( isset( $_GET[ 'start' ] ) == false ) {
 				$start = 0;
@@ -3749,15 +3768,18 @@ function communities_manage_output() {
 					$time_format = get_option('time_format');
 					
 					if (!isset($_GET['start'])) $_GET['start'] = 0;
+					else $_GET['start'] - intval($_GET['start']);
+					
 					if (!isset($_GET['num'])) $_GET['num'] = 0;
+					else $_GET['num'] = intval($_GET['num']);
 					
 					foreach ($news_items as $news_item){
 					//=========================================================//
 					echo "<tr class='" . $class . "'>";
 					echo "<td valign='top'><strong>" . stripslashes( $news_item['news_item_title'] ) . "</strong></td>";
 					echo "<td valign='top'>" . date_i18n( $date_format . ' ' . $time_format, $news_item['news_item_stamp']) . "</td>";
-					echo "<td valign='top'><a href='?page=manage-communities&action=edit_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' rel='permalink' class='edit'>" . __('Edit', $communities_text_domain) . "</a></td>";
-					echo "<td valign='top'><a href='?page=manage-communities&action=remove_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "' rel='permalink' class='delete'>" . __('Remove', $communities_text_domain) . "</a></td>";
+					echo "<td valign='top'><a href='?page=manage-communities&action=edit_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "' rel='permalink' class='edit'>" . __('Edit', $communities_text_domain) . "</a></td>";
+					echo "<td valign='top'><a href='?page=manage-communities&action=remove_news_item&niid=" . $news_item['news_item_ID'] . "&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "' rel='permalink' class='delete'>" . __('Remove', $communities_text_domain) . "</a></td>";
 					echo "</tr>";
 					$class = ('alternate' == $class) ? '' : 'alternate';
 					//=========================================================//
@@ -3775,17 +3797,17 @@ function communities_manage_output() {
 			?>
             <br />
 			<h2><?php _e('New News Item', $communities_text_domain) ?></h2>
-            <form name="new_news_item" method="POST" action="?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+            <form name="new_news_item" method="POST" action="?page=manage-communities&action=new_news_item&cid=<?php echo intval($_GET['cid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                 <table class="form-table">
                 <tr valign="top">
                 <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo (isset($_POST['news_item_title'])) ? $_POST['news_item_title'] : ''; ?>" />
+                <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo (isset($_POST['news_item_title'])) ? sanitize_text_field($_POST['news_item_title']) : ''; ?>" />
                 <br />
                 <?php _e('Required', $communities_text_domain) ?></td>
                 </tr>
                 <tr valign="top">
                 <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo (isset($_POST['news_item_content'])) ? $_POST['news_item_content'] : ''; ?></textarea>
+                <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo (isset($_POST['news_item_content'])) ? wp_kses($_POST['news_item_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) : ''; ?></textarea>
                 <br />
                 <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                 </tr>
@@ -3806,35 +3828,35 @@ function communities_manage_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				}
 			} else {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('New News Item', $communities_text_domain) ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('New News Item', $communities_text_domain) ?></h2>
 				<?php
 				if ( empty( $_POST['news_item_title'] ) || empty( $_POST['news_item_content'] ) ) {
 					?>
 					<p><?php _e('Please fill in all fields.', $communities_text_domain); ?></p>
-                    <form name="new_news_item" method="POST" action="?page=manage-communities&action=new_news_item&cid=<?php echo $_GET['cid']; ?>start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+                    <form name="new_news_item" method="POST" action="?page=manage-communities&action=new_news_item&cid=<?php echo intval($_GET['cid']); ?>start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                         <table class="form-table">
                         <tr valign="top">
                         <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                        <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo $_POST['news_item_title']; ?>" />
+                        <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo sanitize_text_field($_POST['news_item_title']); ?>" />
                         <br />
                         <?php _e('Required', $communities_text_domain) ?></td>
                         </tr>
                         <tr valign="top">
                         <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                        <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo $_POST['news_item_content']; ?></textarea>
+                        <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['news_item_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
                         <br />
                         <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                         </tr>
@@ -3850,7 +3872,7 @@ function communities_manage_output() {
 					$news_item_ID = communities_add_news_item($_GET['cid'], $_POST['news_item_title'], $_POST['news_item_content']);
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('News item published.', $communities_text_domain)) . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('News item published.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -3866,8 +3888,8 @@ function communities_manage_output() {
 			$news_item_title = $wpdb->get_var($wpdb->prepare("SELECT news_item_title FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_ID = '%d'", $_GET['niid']));
 			$news_item_content = $wpdb->get_var($wpdb->prepare("SELECT news_item_content FROM " . $wpdb->base_prefix . "communities_news_items WHERE news_item_ID = '%d'", $_GET['niid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit News Item', $communities_text_domain) ?></h2>
-			<form name="edit_news_item" method="POST" action="?page=manage-communities&action=edit_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit News Item', $communities_text_domain) ?></h2>
+			<form name="edit_news_item" method="POST" action="?page=manage-communities&action=edit_news_item_process&cid=<?php echo intval($_GET['cid']); ?>&niid=<?php echo intval($_GET['niid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
 				<table class="form-table">
 				<tr valign="top">
 				<th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
@@ -3899,35 +3921,35 @@ function communities_manage_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				}
 			} else {
 				$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit News Item', $communities_text_domain) ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Edit News Item', $communities_text_domain) ?></h2>
 				<?php
 				if ( empty( $_POST['news_item_title'] ) || empty( $_POST['news_item_content'] ) ) {
 					?>
 					<p><?php _e('Please fill in all fields.', $communities_text_domain); ?></p>
-                    <form name="edit_news_item" method="POST" action="?page=manage-communities&action=edit_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+                    <form name="edit_news_item" method="POST" action="?page=manage-communities&action=edit_news_item_process&cid=<?php echo intval($_GET['cid']); ?>&niid=<?php echo intval($_GET['niid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                         <table class="form-table">
                         <tr valign="top">
                         <th scope="row"><?php _e('Title', $communities_text_domain) ?></th>
-                        <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo $_POST['news_item_title']; ?>" />
+                        <td><input type="text" name="news_item_title" id="news_item_title" style="width: 95%" value="<?php echo sanitize_text_field($_POST['news_item_title']); ?>" />
                         <br />
                         <?php _e('Required', $communities_text_domain) ?></td>
                         </tr>
                         <tr valign="top">
                         <th scope="row"><?php _e('Content', $communities_text_domain) ?></th>
-                        <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo $_POST['news_item_content']; ?></textarea>
+                        <td><textarea name="news_item_content" id="news_item_content" style="width: 95%" rows="10"><?php echo wp_kses($_POST['news_item_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS); ?></textarea>
                         <br />
                         <?php _e('Required - Some tags allowed: <code>a p ul li br strong img</code>', $communities_text_domain) ?></td>
                         </tr>
@@ -3944,13 +3966,13 @@ function communities_manage_output() {
 					if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+						window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 						</script>
 						";
 					} else {
 						echo "
 						<script type='text/javascript'>
-						window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
+						window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Changes saved.', $communities_text_domain)) . "';
 						</script>
 						";
 					}
@@ -3965,8 +3987,8 @@ function communities_manage_output() {
 			}
 			$community_name = $wpdb->get_var($wpdb->prepare("SELECT community_name FROM " . $wpdb->base_prefix . "communities WHERE community_ID = '%d'", $_GET['cid']));
 			?>
-			<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Remove News Item', $communities_text_domain) ?></h2>
-            <form name="remove_news_item" method="POST" action="?page=manage-communities&action=remove_news_item_process&cid=<?php echo $_GET['cid']; ?>&niid=<?php echo $_GET['niid']; ?>&start=<?php echo $_GET['start']; ?>&num=<?php echo $_GET['num']; ?>">
+			<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Remove News Item', $communities_text_domain) ?></h2>
+            <form name="remove_news_item" method="POST" action="?page=manage-communities&action=remove_news_item_process&cid=<?php echo intval($_GET['cid']); ?>&niid=<?php echo intval($_GET['niid']); ?>&start=<?php echo intval($_GET['start']); ?>&num=<?php echo intval($_GET['num']); ?>">
                 <table class="form-table">
                 <tr valign="top">
                 <th scope="row"><?php _e('Are you sure?', $communities_text_domain) ?></th>
@@ -3994,13 +4016,13 @@ function communities_manage_output() {
 				if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&start=" . $_GET['start'] . "&num=" . $_GET['num'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&start=" . intval($_GET['start']) . "&num=" . intval($_GET['num']) . "';
 					</script>
 					";
 				} else {
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "';
+					window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "';
 					</script>
 					";
 				}
@@ -4008,7 +4030,7 @@ function communities_manage_output() {
 				communities_delete_news_item($_GET['niid']);
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=manage-communities&action=manage_news&cid=" . $_GET['cid'] . "&updated=true&updatedmsg=" . urlencode(__('News item removed.', $communities_text_domain)) . "';
+				window.location='?page=manage-communities&action=manage_news&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('News item removed.', $communities_text_domain)) . "';
 				</script>
 				";
 			}
@@ -4026,7 +4048,7 @@ function communities_find_output() {
 	global $wpdb, $wp_roles, $current_user, $user_ID, $current_site, $communities_text_domain;
 
 	if (isset($_GET['updated'])) {
-		?><div id="message" class="updated fade"><p><?php echo( urldecode( $_GET['updatedmsg'] ) ) ?></p></div><?php
+		?><div id="message" class="updated fade"><p><?php echo( sanitize_text_field( $_GET['updatedmsg'] ) ) ?></p></div><?php
 	}
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
@@ -4036,7 +4058,7 @@ function communities_find_output() {
 			if (!isset($_REQUEST['search_terms']))
 				$search_terms = '';
 			else 
-				$search_terms = $_REQUEST['search_terms'];
+				$search_terms = sanitize_text_field($_REQUEST['search_terms']);
 
 			//if ($search_terms == '') {
 			//	$search_terms = rawurldecode($_REQUEST['search_terms']);
@@ -4136,20 +4158,20 @@ function communities_find_output() {
 				communities_join_community($user_ID, $_GET['cid']);
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=find-communities&search_terms=" . $_GET['search_terms'] . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
+				window.location='?page=find-communities&search_terms=" . sanitize_text_field($_GET['search_terms']) . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
 				</script>
 				";
 			} else {
 				?>
-				<h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Join', $communities_text_domain) ?></h2>
+				<h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Join', $communities_text_domain) ?></h2>
                 <p><?php _e('This is a private community. Please supply the code below to join.', $communities_text_domain) ?></p>
                 <form name="edit_community" method="POST" action="?page=find-communities&action=join_community_process">
-                    <input type="hidden" name="cid" value="<?php echo $_GET['cid']; ?>" />
-                    <input type="hidden" name="search_terms" value="<?php echo $_GET['search_terms']; ?>" />
+                    <input type="hidden" name="cid" value="<?php echo intval($_GET['cid']); ?>" />
+                    <input type="hidden" name="search_terms" value="<?php echo sanitize_text_field($_GET['search_terms']); ?>" />
                     <table class="form-table">
                     <tr valign="top">
                     <th scope="row"><?php _e('Code', $communities_text_domain) ?></th>
-                    <td><input type="text" name="code" id="code" style="width: 95%" maxlength="250" value="<?php echo $_POST['code']; ?>" />
+                    <td><input type="text" name="code" id="code" style="width: 95%" maxlength="250" value="<?php echo sanitize_text_field($_POST['code']); ?>" />
                     <br />
 					</td>
                     </tr>
@@ -4176,17 +4198,17 @@ function communities_find_output() {
 				if ( $community_owner_user_ID == $user_ID ) {
 					die('Nice try');
 				}
-				if ( $_POST['code'] != substr(md5($_POST['cid'] . '1234'),0,5) ) {
+				if ( sanitize_text_field($_POST['code']) != substr(md5(intval($_POST['cid']) . '1234'),0,5) ) {
 				?>
-                    <h2><a href="?page=communities&action=dashboard&cid=<?php echo $_GET['cid']; ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Join', $communities_text_domain) ?></h2>
+                    <h2><a href="?page=communities&action=dashboard&cid=<?php echo intval($_GET['cid']); ?>" style="text-decoration:none;"><?php echo stripslashes( $community_name ); ?></a> &raquo; <?php _e('Join', $communities_text_domain) ?></h2>
                     <p><?php _e('Sorry, the code you provided is invalid.', $communities_text_domain) ?></p>
                     <form name="edit_community" method="POST" action="?page=find-communities&action=join_community_process">
-                        <input type="hidden" name="cid" value="<?php echo $_POST['cid']; ?>" />
-                        <input type="hidden" name="search_terms" value="<?php echo $_GET['search_terms']; ?>" />
+                        <input type="hidden" name="cid" value="<?php echo intval($_POST['cid']); ?>" />
+                        <input type="hidden" name="search_terms" value="<?php echo sanitize_text_field($_GET['search_terms']); ?>" />
                         <table class="form-table">
                         <tr valign="top">
                         <th scope="row"><?php _e('Code', $communities_text_domain) ?></th>
-                        <td><input type="text" name="code" id="code" style="width: 95%" maxlength="250" value="<?php echo $_POST['code']; ?>" />
+                        <td><input type="text" name="code" id="code" style="width: 95%" maxlength="250" value="<?php echo sanitize_text_field($_POST['code']); ?>" />
                         <br />
                         </td>
                         </tr>
@@ -4201,7 +4223,7 @@ function communities_find_output() {
 					communities_join_community($user_ID, $_POST['cid']);
 					echo "
 					<script type='text/javascript'>
-					window.location='?page=find-communities&search_terms=" . $_POST['search_terms'] . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
+					window.location='?page=find-communities&search_terms=" . sanitize_text_field($_POST['search_terms']) . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
 					</script>
 					";
 				}
@@ -4335,9 +4357,3 @@ function communities_plugin_install() {
 	}
 	update_site_option( "communities_installed", "yes" );
 }
-
-//------------------------------------------------------------------------//
-//---Support Functions----------------------------------------------------//
-//------------------------------------------------------------------------//
-
-?>
