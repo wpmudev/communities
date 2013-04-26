@@ -1311,7 +1311,7 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
                 </p>
                 </form>
 				<?php
@@ -1463,8 +1463,8 @@ function communities_output() {
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-            <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+            <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+            <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
             </p>
             </form>
             <?php
@@ -1648,7 +1648,7 @@ function communities_output() {
 					?>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
                 </p>
                 </form>
                 <?php
@@ -1712,8 +1712,8 @@ function communities_output() {
                             ?>
                             </table>
                         <p class="submit">
-                        <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                        <input type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
+                        <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                        <input class="input-primary" type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
                         </p>
                         </form>
                         <?php
@@ -1907,7 +1907,7 @@ function communities_output() {
 						</tr>
 						</table>
 					<p class="submit">
-					<input type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
+					<input class="input-primary" type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
 					</p>
 					</form>
 					<?php
@@ -1951,8 +1951,8 @@ function communities_output() {
 								</tr>
 								</table>
 							<p class="submit">
-							<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-							<input type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
+							<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+							<input class="input-primary" type="submit" name="Submit" value="<?php _e('Post', $communities_text_domain) ?>" />
 							</p>
 							</form>
 							<?php
@@ -1998,8 +1998,8 @@ function communities_output() {
 						</tr>
 						</table>
 					<p class="submit">
-					<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-					<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+					<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+					<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 					</p>
 					</form>
 					<?php
@@ -2045,8 +2045,8 @@ function communities_output() {
 								</tr>
 								</table>
 							<p class="submit">
-							<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-							<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+							<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+							<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 							</p>
 							</form>
 							<?php
@@ -2093,8 +2093,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
                 </p>
                 </form>
 				<?php
@@ -2248,8 +2248,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
                 </p>
                 </form>
 				<?php
@@ -2317,8 +2317,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
                 </p>
                 </form>
                 <?php
@@ -2359,8 +2359,8 @@ function communities_output() {
 							</tr>
 							</table>
 						<p class="submit">
-						<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-						<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+						<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+						<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 						</p>
 						</form>
 						<?php
@@ -2574,8 +2574,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
                 </p>
                 </form>
                 <?php
@@ -2621,8 +2621,8 @@ function communities_output() {
 							</tr>
 							</table>
 						<p class="submit">
-						<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-						<input type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
+						<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+						<input class="input-primary" type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
 						</p>
 						</form>
 						<?php
@@ -2661,8 +2661,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
                 </p>
                 </form>
                 <?php
@@ -2710,8 +2710,8 @@ function communities_output() {
 							</tr>
 							</table>
 						<p class="submit">
-						<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-						<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+						<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+						<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 						</p>
 						</form>
 						<?php
@@ -2745,8 +2745,8 @@ function communities_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
                 </p>
                 </form>
                 <?php
@@ -3110,7 +3110,7 @@ function communities_add_output() {
 			</tr>
 			</table>
 			<p class="submit">
-			<input type="submit" name="Submit" value="<?php _e('Create', $communities_text_domain) ?>" />
+			<input class="input-primary" type="submit" name="Submit" value="<?php _e('Create', $communities_text_domain) ?>" />
 			</p>
 		</form>
 	</div>
@@ -3334,8 +3334,8 @@ function communities_manage_output() {
 				</tr>
 				</table>
 			<p class="submit">
-			<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-			<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+			<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+			<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 			</p>
 			</form>
 			<?php
@@ -3377,8 +3377,8 @@ function communities_manage_output() {
 						</tr>
 						</table>
 					<p class="submit">
-					<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-					<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+					<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+					<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 					</p>
 					</form>
 					<?php
@@ -3410,8 +3410,8 @@ function communities_manage_output() {
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-            <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+            <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+            <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
             </p>
             </form>
             <?php
@@ -3720,7 +3720,7 @@ function communities_manage_output() {
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
+            <input class="input-primary" type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
             </p>
             </form>
             <?php
@@ -3769,8 +3769,8 @@ function communities_manage_output() {
                         </tr>
                         </table>
                     <p class="submit">
-                    <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                    <input type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
+                    <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                    <input class="input-primary" type="submit" name="Submit" value="<?php _e('Publish', $communities_text_domain) ?>" />
                     </p>
                     </form>
 					<?php
@@ -3812,8 +3812,8 @@ function communities_manage_output() {
 				</tr>
 				</table>
 			<p class="submit">
-			<input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-			<input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+			<input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+			<input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
 			</p>
 			</form>
 			<?php
@@ -3862,8 +3862,8 @@ function communities_manage_output() {
                         </tr>
                         </table>
                     <p class="submit">
-                    <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                    <input type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
+                    <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                    <input class="input-primary" type="submit" name="Submit" value="<?php _e('Save Changes', $communities_text_domain) ?>" />
                     </p>
                     </form>
 					<?php
@@ -3907,8 +3907,8 @@ function communities_manage_output() {
                 </tr>
                 </table>
             <p class="submit">
-            <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-            <input type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
+            <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+            <input class="input-primary" type="submit" name="Submit" value="<?php _e('Continue', $communities_text_domain) ?>" />
             </p>
             </form>
             <?php
@@ -3976,7 +3976,7 @@ function communities_find_output() {
             <h2><?php _e('Find Communities', $communities_text_domain) ?>&nbsp;&nbsp;<em style="font-size:14px;"><?php _e("Searches community names and descriptions", $communities_text_domain) ?></em></h2>
             <p id="post-search">
                 <input id="post-search-input" name="search_terms" value="<?php echo $search_terms; ?>" type="text">
-                <input value="<?php _e('Search', $communities_text_domain) ?>" class="button" type="submit">
+                <input class="input-secondary" value="<?php _e('Search', $communities_text_domain) ?>" class="button" type="submit">
             </p>
             </form>
             <?php
@@ -4089,8 +4089,8 @@ function communities_find_output() {
                     </tr>
                     </table>
                 <p class="submit">
-                <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                <input type="submit" name="Submit" value="<?php _e('Join', $communities_text_domain) ?>" />
+                <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                <input class="input-primary" type="submit" name="Submit" value="<?php _e('Join', $communities_text_domain) ?>" />
                 </p>
                 </form>
 				<?php
@@ -4135,8 +4135,8 @@ function communities_find_output() {
                         </tr>
                         </table>
                     <p class="submit">
-                    <input type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
-                    <input type="submit" name="Submit" value="<?php _e('Join', $communities_text_domain) ?>" />
+                    <input class="input-secondary" type="submit" name="Cancel" value="<?php _e('Cancel', $communities_text_domain) ?>" />
+                    <input class="input-primary" type="submit" name="Submit" value="<?php _e('Join', $communities_text_domain) ?>" />
                     </p>
                     </form>
 				<?php
