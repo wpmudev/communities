@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: Communities
-Plugin URI: http://premium.wpmudev.org/project/communities
+Plugin URI: http://premium.wpmudev.org/project/communities/
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
 Version: 1.1.9.5
@@ -10,7 +10,7 @@ WDP ID: 67
 */
 
 /*
-Copyright 2009-2011 Incsub (http://incsub.com)
+Copyright 2009-2013 Incsub (http://incsub.com)
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License (Version 2 - GPLv2) as published by

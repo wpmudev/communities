@@ -4,9 +4,11 @@ Author: Paul Menard (Incsub)
 Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
+
 1.1.9.5 - 2013/4/24
 ----------------------------------------------------------------------
-- More Security patches applied for user input variables.
+- IMPORTANT security update - props to JJJ @ Automattic for disclosure
+- XSS prevention patches
 
 1.1.9.4 - 2013/4/22
 ----------------------------------------------------------------------
