@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities/
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.5
+Version: 1.1.9.6
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -1174,7 +1174,9 @@ function communities_output() {
 			if ( is_super_admin() ) {
 				$community_count = $wpdb->get_var("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities");
 			} else {
-				$community_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = %d", $user_ID));
+				//$community_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = %d", $user_ID));
+				$community_count = $wpdb->get_var($wpdb->prepare("SELECT COUNT(*) FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = %d", $user_ID));
+				
 			}
 			//echo "community_count=[". $community_count ."]<br />";
 		
@@ -1195,8 +1197,16 @@ function communities_output() {
 //			$query = $wpdb->prepare("SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '%d'", $user_ID);
 			if ( is_super_admin() ) {
 				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY %s %s LIMIT %d,%d", $_GET['orderby'], $_GET['order'], $start,  $num);
+/*
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities as c
+				INNER JOIN " . $wpdb->base_prefix . "communities_members as m ON c.community_ID=m.community_ID
+				WHERE m.member_user_ID = %d ORDER BY %s %s LIMIT %d,%d", $user_ID, $_GET['orderby'], $_GET['order'], $start,  $num);
+*/				
+				
 			} else {
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = %d ORDER BY %s %s LIMIT %d,%d", $user_ID, $_GET['orderby'], $_GET['order'], $start,  $num);
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities as c
+				INNER JOIN " . $wpdb->base_prefix . "communities_members as m ON c.community_ID=m.community_ID
+				WHERE m.member_user_ID = %d ORDER BY %s %s LIMIT %d,%d", $user_ID, $_GET['orderby'], $_GET['order'], $start,  $num);
 			}
 			//echo "query=[". $query ."]<br />";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
@@ -1250,6 +1260,7 @@ function communities_output() {
 				<?php
 				//=========================================================//
 					$class = '';
+					//echo "communities<pre>"; print_r($communities); echo "</pre>";
 					foreach ($communities as $community){
 					$community_details = $wpdb->get_row($wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_ID = %d", $community['community_ID']));
 					//=========================================================//
@@ -1269,9 +1280,14 @@ function communities_output() {
 
 					echo "<td valign='top'><a href='?page=communities&action=notifications&cid=" . $community['community_ID'] . "' rel='permalink' class='edit'>" . __('Notifications', $communities_text_domain) . "</a></td>";
 					if ( $community_details->community_owner_user_ID == $user_ID ) {
-						echo "<td valign='top'>" . __('Leave', $communities_text_domain) . "</td>";
+						//echo "<td valign='top'>" . __('Owner', $communities_text_domain) . "</td>";
+						echo "<td valign='top'>&nbsp;</td>";
 					} else {
-						echo "<td valign='top'><a href='?page=communities&action=leave_community&cid=" . $community['community_ID'] . "' rel='permalink' class='delete'>" . __('Leave', $communities_text_domain) . "</a></td>";
+						if ( is_super_admin() ) {
+							echo "<td valign='top'>&nbsp;</td>";
+						} else {
+							echo "<td valign='top'><a href='?page=communities&action=leave_community&cid=" . $community['community_ID'] . "' rel='permalink' class='delete'>" . __('Leave', $communities_text_domain) . "</a></td>";
+						}
 					}
 					echo "</tr>";
 					$class = ('alternate' == $class) ? '' : 'alternate';
