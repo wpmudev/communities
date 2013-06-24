@@ -5,6 +5,12 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.1.9.7 - 2013/06/24
+----------------------------------------------------------------------
+- Correct double filtering logic previously added for XSS prevention. 
+- Corrected issue which causes initial forum post to have blank content
+- Added support for multi-paragraph content instead of removing line breaks entered. 
+
 1.1.9.6 - 2013/6/07
 ----------------------------------------------------------------------
 - Corrected query of Communities page. Fix to show all items user is owner and member of.

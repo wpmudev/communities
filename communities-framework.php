@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities/
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.6
+Version: 1.1.9.7
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,7 +26,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.9.5';
+$communities_current_version = '1.1.9.7';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -522,11 +522,11 @@ function communities_count_posts($topic_ID) {
 function communities_add_topic($community_ID, $user_ID, $title, $content, $sticky = '0') {
 	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= intval($community_ID);
-	$user_ID 		= intval($user_ID);
-	$title 			= stripslashes(sanitize_text_field($title));
+	//$community_ID 	= intval($community_ID);
+	//$user_ID 		= intval($user_ID);
+	//$title 			= stripslashes(sanitize_text_field($title));
 	$content 		= stripslashes(wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS));
-	$sticky			= intval($sticky);
+	//$sticky			= intval($sticky);
 	$time = time();
 
 	//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_topics (topic_community_ID, topic_title, topic_author, topic_last_author, topic_stamp, topic_last_updated_stamp, topic_sticky) VALUES ( '" . $community_ID . "', '" . addslashes( $title ) . "', '" . $user_ID . "', '" . $user_ID . "', '" . $time . "', '" . $time . "', '" . $sticky . "')" );
@@ -569,9 +569,9 @@ function communities_add_topic($community_ID, $user_ID, $title, $content, $stick
 function communities_add_post($community_ID, $topic_ID, $user_ID, $content) {
 	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= intval($community_ID);
-	$topic_ID 		= intval($topic_ID);
-	$user_ID 		= intval($user_ID);
+//	$community_ID 	= intval($community_ID);
+//	$topic_ID 		= intval($topic_ID);
+//	$user_ID 		= intval($user_ID);
 	$content 		= stripslashes(wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS));
 
 	$time = time();
@@ -603,7 +603,7 @@ function communities_add_post($community_ID, $topic_ID, $user_ID, $content) {
 function communities_update_post_content($post_ID, $content) {
 	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$post_ID 	= intval($post_ID);
+	//$post_ID 	= intval($post_ID);
 	$content 	= stripslashes(wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS));
 
 //	$wpdb->query( "UPDATE " . $wpdb->base_prefix . "communities_posts SET post_content = '" . addslashes( $content ) . "' WHERE post_ID = '" . $post_ID . "'" );
@@ -717,8 +717,8 @@ function communities_delete_post($topic_ID, $post_ID) {
 function communities_add_page($community_ID, $parent_page_ID, $title, $content) {
 	global $wpdb, $COMMUNITIES_ALLOWED_CONTENT_TAGS;
 
-	$community_ID 	= intval($community_ID);
-	$parent_page_ID = intval($parent_page_ID);
+	//$community_ID 	= intval($community_ID);
+	//$parent_page_ID = intval($parent_page_ID);
 	$title 			= stripslashes(sanitize_text_field($title));
 	$content 		= stripslashes(wp_kses($content, $COMMUNITIES_ALLOWED_CONTENT_TAGS));
 	$time 			= time();
@@ -1734,7 +1734,7 @@ function communities_output() {
                         </form>
                         <?php
 					} else {
-						$topic_ID = communities_add_topic(intval($_GET['cid']), $user_ID, stripslashes(sanitize_text_field($_POST['topic_title'])), stripslashes(wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS)), sanitize_text_field($_POST['topic_sticky']));
+						$topic_ID = communities_add_topic($_GET['cid'], $user_ID, $_POST['topic_title'], $_POST['topic_content'], $_POST['topic_sticky']);
 						echo "
 						<script type='text/javascript'>
 						window.location='?page=communities&action=topic&tid=" . $topic_ID . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Topic added.', $communities_text_domain)) . "';
@@ -1885,7 +1885,11 @@ function communities_output() {
 						echo "<a href='http://" . $user_primary_blog->domain . $user_primary_blog->path . "' style='text-decoration:none;'>" . __("View Blog", $communities_text_domain) . "</a>";
 						echo "</strong></center></td>";
 						echo "<td valign='top'>";
-						echo "<p>" . stripslashes( wp_kses($post['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) ) . "</p>";
+						//echo "<p>" . stripslashes( wp_kses($post['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS) ) . "</p>";
+						$post['post_content'] = apply_filters('the_content', $post['post_content']);
+						$post['post_content'] = str_replace(']]>', ']]&gt;', $post['post_content']);
+						echo $post['post_content'];
+						
 						echo "<br />";
 						echo "<div style='border-top:#cccccc solid 1px;' >";
 						echo __("Posted", $communities_text_domain) . ": " . date_i18n($date_format . ' ' . $time_format, $post['post_stamp']);
@@ -1973,7 +1977,7 @@ function communities_output() {
 							</form>
 							<?php
 						} else {
-							communities_add_post(intval($_GET['cid']), intval($_GET['tid']), $user_ID, stripslashes(wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS)));
+							communities_add_post($_GET['cid'], $_GET['tid'], $user_ID, $_POST['post_content']);
 							if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 								echo "
 								<script type='text/javascript'>
@@ -2067,7 +2071,7 @@ function communities_output() {
 							</form>
 							<?php
 						} else {
-							communities_update_post_content(intval($_GET['pid']), stripslashes(wp_kses($_POST['post_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS)));
+							communities_update_post_content($_GET['pid'], $_POST['post_content']);
 							if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 								echo "
 								<script type='text/javascript'>
@@ -2381,7 +2385,7 @@ function communities_output() {
 						</form>
 						<?php
 					} else {
-						communities_update_topic_title(intval($_GET['tid']), stripslashes(sanitize_text_field($_POST['topic_title'])));
+						communities_update_topic_title($_GET['tid'], $_POST['topic_title']);
 						if ( !empty( $_GET['start'] ) || !empty( $_GET['num'] ) ) {
 							echo "
 							<script type='text/javascript'>
@@ -2562,9 +2566,14 @@ function communities_output() {
                     <h3><?php _e('Page', $communities_text_domain) ?></h3>
 					<?php
 				}
+				$page_details->page_content = apply_filters('the_content', $page_details->page_content);
+				$page_details->page_content = str_replace(']]>', ']]&gt;', $page_details->page_content);
+				echo $page_details->page_content;
+/*
 				?>
                 <p><?php echo stripslashes(wp_kses($page_details->page_content, $COMMUNITIES_ALLOWED_CONTENT_TAGS)); ?></p>
                 <?php
+*/
 			}
 		break;
 		//---------------------------------------------------//
@@ -2643,7 +2652,7 @@ function communities_output() {
 						</form>
 						<?php
 					} else {
-						$page_ID = communities_add_page(intval($_GET['cid']), intval($_GET['ppid']), stripslashes(sanitize_text_field($_POST['page_title'])), stripslashes(wp_kses($_POST['page_content'], $COMMUNITIES_ALLOWED_CONTENT_TAGS)));
+						$page_ID = communities_add_page($_GET['cid'], $_GET['ppid'], $_POST['page_title'], $_POST['page_content']);
 						echo "
 						<script type='text/javascript'>
 						window.location='?page=communities&action=page&pid=" . $page_ID . "&cid=" . intval($_GET['cid']) . "&updated=true&updatedmsg=" . urlencode(__('Page published.', $communities_text_domain)) . "';
@@ -4086,7 +4095,7 @@ function communities_find_output() {
 				communities_join_community($user_ID, intval($_GET['cid']));
 				echo "
 				<script type='text/javascript'>
-				window.location='?page=find-communities&xxx=123&search_terms=" . urlencode($search_terms) . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
+				window.location='?page=find-communities&search_terms=" . urlencode($search_terms) . "&updated=true&updatedmsg=" . urlencode(__('Successfully joined.', $communities_text_domain)) . "';
 				</script>
 				";
 			} else {
