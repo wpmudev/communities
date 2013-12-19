@@ -4,7 +4,7 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities/
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: Paul Menard (Incsub)
-Version: 1.1.9.7
+Version: 1.1.9.8
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
 */
@@ -26,14 +26,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.9.7';
+$communities_current_version = '1.1.9.8';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
 $communities_notifications_default = 'digest'; // 'digest', 'instant', OR 'none'
 $communities_text_domain = 'communities'; // 'digest', 'instant', OR 'none'
-
-include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
 
 $COMMUNITIES_ALLOWED_CONTENT_TAGS = array(
 	'a' 		=> 	array('href' => array(),'title' => array()),
@@ -269,6 +267,12 @@ function communities_global_install() {
 function communities_admin_init() {
 	global $wp_roles;
 	
+	// Add support for new WPMUDEV Dashboard Notices
+	global $wpmudev_notices;
+	$wpmudev_notices[] = array( 'id'=> 67, 'name'=> 'Communities', 'screens' => array('toplevel_page_communities', 'communities_page_manage-communities', 'communities_page_add-communities', 'communities_page_find-communities') 
+	);
+	include_once( dirname(__FILE__) . '/lib/dash-notices/wpmudev-dash-notification.php');
+		
 	$role_names = $wp_roles->get_names();
 	foreach($role_names as $role_name => $role_label ) {
 		$role_object = get_role( $role_name );
@@ -1196,7 +1200,7 @@ function communities_output() {
 
 //			$query = $wpdb->prepare("SELECT community_ID FROM " . $wpdb->base_prefix . "communities_members WHERE member_user_ID = '%d'", $user_ID);
 			if ( is_super_admin() ) {
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY %s %s LIMIT %d,%d", $_GET['orderby'], $_GET['order'], $start,  $num);
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY ". $_GET['orderby'] ." ". $_GET['order'] ." LIMIT %d,%d", $start,  $num);
 /*
 				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities as c
 				INNER JOIN " . $wpdb->base_prefix . "communities_members as m ON c.community_ID=m.community_ID
@@ -1206,7 +1210,7 @@ function communities_output() {
 			} else {
 				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities as c
 				INNER JOIN " . $wpdb->base_prefix . "communities_members as m ON c.community_ID=m.community_ID
-				WHERE m.member_user_ID = %d ORDER BY %s %s LIMIT %d,%d", $user_ID, $_GET['orderby'], $_GET['order'], $start,  $num);
+				WHERE m.member_user_ID = %d ORDER BY ". $_GET['orderby'] ." ". $_GET['order'] ." LIMIT %d,%d", $user_ID, $start,  $num);
 			}
 			//echo "query=[". $query ."]<br />";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
@@ -3165,7 +3169,7 @@ function communities_manage_output() {
 	echo '<div class="wrap">';
 	if (!isset($_GET[ 'action' ])) $_GET[ 'action' ] = '';
 	else $_GET[ 'action' ] = sanitize_text_field($_GET[ 'action' ]);
-	
+		
 	switch( $_GET[ 'action' ] ) {
 		//---------------------------------------------------//
 		case '':
@@ -3190,11 +3194,11 @@ function communities_manage_output() {
 				$num = intval( $_GET[ 'num' ] );
 			}
 			if ( is_super_admin() ) {
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY %s %s LIMIT %d, %d", $_GET['orderby'], $_GET['order'], $_get['start'], $_GET['num']);
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities ORDER BY ". $_GET['orderby'] ." ". $_GET['order'] ." LIMIT %d, %d", $_GET['start'], $_GET['num']);
 			} else {
-				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = %d ORDER BY %s %s LIMIT %d, %d", $user_ID, $_GET['orderby'], $_GET['order'], $_get['start'], $_GET['num']);
+				$query = $wpdb->prepare("SELECT * FROM " . $wpdb->base_prefix . "communities WHERE community_owner_user_ID = %d ORDER BY ". $_GET['orderby'] ." ". $_GET['order'] ." LIMIT %d, %d", $user_ID, $_GET['start'], $_GET['num']);
 			}
-			//echo "query<pre>"; print_r($query); echo "</pre>";
+			//echo "query[". $query ."]<br />";
 			$communities = $wpdb->get_results( $query, ARRAY_A );
 			if( count( $communities ) < $num ) {
 				$next = false;

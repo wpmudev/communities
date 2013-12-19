@@ -5,6 +5,13 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.1.9.8 - 2013/12/19
+----------------------------------------------------------------------
+- Corrected Next Page link on Manage Communities listing
+- Corrected ordering of listing on Communitoes, Manage Communities and Find Communities listings
+- Updated WPMU DEV Dashboard notifications.
+- Test for WP 3.8
+
 1.1.9.7 - 2013/06/24
 ----------------------------------------------------------------------
 - Correct double filtering logic previously added for XSS prevention. 
