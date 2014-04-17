@@ -5,6 +5,10 @@ Change Log:
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
 
+1.1.9.9 - 2014/04/17
+----------------------------------------------------------------------
+- Corrected two queries where mismatched double/single quotes were being used. Effect notification queries.
+
 1.1.9.8 - 2013/12/19
 ----------------------------------------------------------------------
 - Corrected Next Page link on Manage Communities listing

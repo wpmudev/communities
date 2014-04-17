@@ -4,9 +4,14 @@ Plugin Name: Communities
 Plugin URI: http://premium.wpmudev.org/project/communities/
 Description: Create internal communities with their own discussion boards, wikis, news dashboards, user lists and messaging facilities
 Author: WPMU DEV
-Version: 1.1.9.8
+Version: 1.1.9.9
 Author URI: http://premium.wpmudev.org/
 WDP ID: 67
+Text Domain: communities
+Domain Path: /communities-languages
+
+
+
 */
 
 /*
@@ -26,7 +31,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-$communities_current_version = '1.1.9.8';
+$communities_current_version = '1.1.9.9';
 //------------------------------------------------------------------------//
 //---Config---------------------------------------------------------------//
 //------------------------------------------------------------------------//
@@ -920,7 +925,7 @@ function communities_page_notification($community_ID, $page_ID, $title) {
 			$member_primary_blog = get_active_blog_for_user( $digest_member['member_user_ID'] );
 			$notification_item_url = 'http://' . $member_primary_blog->domain . $member_primary_blog->path . $item_url;
 			//$wpdb->query( "INSERT INTO " . $wpdb->base_prefix . "communities_notifications (notification_community_ID, notification_user_ID, notification_stamp, notification_item_title, notification_item_url, notification_item_type) VALUES ( '" . $community_ID . "', '" . $digest_member['member_user_ID'] . "', '" . $time . "', '" . addslashes( $title ) . "', '" . $notification_item_url . "', 'page')" );
-			$wpdb->insert('$wpdb->base_prefix . "communities_notifications', 
+			$wpdb->insert($wpdb->base_prefix . "communities_notifications", 
 				array(
 					'notification_community_ID'		=>	$community_ID, 
 					'notification_user_ID'			=>	$digest_member['member_user_ID'], 
@@ -1022,7 +1027,7 @@ function communities_news_notification($community_ID, $news_item_ID, $title) {
 			$loop_email_content = str_replace('NOTIFCATIONS_URL', $notifications_url, $loop_email_content);
 
 			$from_email = 'noreply@' . $current_site->domain;
-			$message_headers = "MIME-Version: 1.0\n" . "From: " . $current_site->site_name .  " <{$from_email}>\n" . "Content-Type: text/html; charset=\"" . $blog_charset . "\"\n";
+			$message_headers = 'MIME-Version: 1.0\n' . 'From: ' . $current_site->site_name .  '<{$from_email}>\n' . 'Content-Type: text/html; charset="' . $blog_charset . '"\n';
 			wp_mail($member_details->user_email, $loop_email_subject, $loop_email_content, $message_headers);
 		}
 	}
